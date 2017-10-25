@@ -2,7 +2,6 @@
 
 namespace FluentExcel
 {
-    using System;
     using System.Collections.Generic;
 
     /// <summary>
@@ -39,11 +38,11 @@ namespace FluentExcel
         public FluentConfiguration<TModel> For<TModel>(bool refreshCache = false) where TModel : class
         {
             var type = typeof(TModel);
-            if (!FluentConfigs.TryGetValue(type, out var mc) || refreshCache)
+            if (!FluentConfigs.TryGetValue(type.FullName, out var mc) || refreshCache)
             {
                 mc = new FluentConfiguration<TModel>();
 
-                FluentConfigs[type] = mc;
+                FluentConfigs[type.FullName] = mc;
             }
 
             return mc as FluentConfiguration<TModel>;
@@ -53,6 +52,6 @@ namespace FluentExcel
         /// Gets the model fluent configs.
         /// </summary>
         /// <value>The model fluent configs.</value>
-        internal IDictionary<Type, IFluentConfiguration> FluentConfigs { get; } = new Dictionary<Type, IFluentConfiguration>();
+        internal IDictionary<string, IFluentConfiguration> FluentConfigs { get; } = new Dictionary<string, IFluentConfiguration>();
     }
 }
