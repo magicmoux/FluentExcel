@@ -48,7 +48,7 @@ namespace FluentExcel
 
             bool fluentConfigEnabled = false;
             // get the fluent config
-            if (Setting.FluentConfigs.TryGetValue(typeof(T), out var fluentConfig))
+            if (Setting.FluentConfigs.TryGetValue(typeof(T).FullName, out var fluentConfig))
             {
                 fluentConfigEnabled = true;
             }
@@ -180,6 +180,8 @@ namespace FluentExcel
             return list;
         }
 
+        #region TODO relocate into a "Util" class
+
         internal static object GetCellValue(this IRow row, int index, IFormulaEvaluator eval = null)
         {
             var cell = row.GetCell(index);
@@ -248,5 +250,7 @@ namespace FluentExcel
             _formulaEvaluator = workbook.GetCreationHelper().CreateFormulaEvaluator();
             return workbook;
         }
+
+        #endregion
     }
 }

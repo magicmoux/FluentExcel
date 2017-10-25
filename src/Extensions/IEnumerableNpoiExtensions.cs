@@ -86,14 +86,18 @@ namespace FluentExcel
             }
         }
 
+        #region TODO relocate into a "Util" class
+
         internal static IWorkbook ToWorkbook<T>(this IEnumerable<T> source, IWorkbook workbook, string sheetName, bool overwrite = false)
         {
+            #region TODO Handle a specific configuration parameter
+
             // can static properties or only instance properties?
             var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
 
             bool fluentConfigEnabled = false;
-            // get the fluent config
-            if (Excel.Setting.FluentConfigs.TryGetValue(typeof(T), out var fluentConfig))
+            // get the fluent config for the sheet if it exists
+            if (Excel.Setting.FluentConfigs.TryGetValue(typeof(T).FullName, out var fluentConfig))
             {
                 fluentConfigEnabled = true;
             }
@@ -115,6 +119,8 @@ namespace FluentExcel
                 }
             }
 
+            #endregion
+
             // new sheet
             //TODO check the sheet's name is valid
             var sheet = workbook.GetSheet(sheetName);
@@ -128,6 +134,8 @@ namespace FluentExcel
                 if (!overwrite) sheet = workbook.CreateSheet();
             }
 
+            #region TODO make this configurable
+
             // cache cell styles
             var cellStyles = new Dictionary<int, ICellStyle>();
 
@@ -138,6 +146,8 @@ namespace FluentExcel
             titleStyle.FillPattern = FillPattern.Bricks;
             titleStyle.FillBackgroundColor = HSSFColor.Grey40Percent.Index;
             titleStyle.FillForegroundColor = HSSFColor.White.Index;
+
+            #endregion
 
             var titleRow = sheet.CreateRow(0);
             var rowIndex = 1;
@@ -402,5 +412,7 @@ namespace FluentExcel
             row = row + 1;
             return ((char)col) + row.ToString();
         }
+
+        #endregion
     }
 }
