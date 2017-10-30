@@ -19,6 +19,7 @@ namespace FluentExcel.Extensions
             {
                 WithWorksheet<T>(settings, group, group.Key, columns);
             }
+            settings.CurrentSheetsSettings.UnionWith(settings.FluentConfigs.Where(cfg => worksheetData.Select(g => g.Key).Contains(cfg.Key)).Select(cfg => cfg.Value));
             return settings;
         }
 
@@ -63,38 +64,38 @@ namespace FluentExcel.Extensions
                 settings.FluentConfigs[sheetName] = worksheet;
             }
             // Sets the current configuration active sheet
-            settings.ActiveWorksheetSettings = worksheet;
+            settings.CurrentSheetsSettings = new HashSet<IFluentConfiguration>() { worksheet };
             return settings;
         }
 
         public static WorkbookSettings AdjustAutoIndex(this WorkbookSettings settings)
         {
-            settings.ActiveWorksheetSettings.GetType().GetMethod("AdjustAutoIndex").Invoke(settings.ActiveWorksheetSettings, null);
+            settings.CurrentSheetsSettings.ToList().ForEach(s => s.GetType().GetMethod("AdjustAutoIndex").Invoke(s, null));
             return settings;
         }
 
         public static WorkbookSettings HasFilter(this WorkbookSettings settings, int firstColumn, int lastColumn, int firstRow, int? lastRow = null)
         {
-            settings.ActiveWorksheetSettings.GetType().GetMethod("HasFilter").Invoke(settings.ActiveWorksheetSettings, new object[] { firstColumn, lastColumn, firstRow, lastRow });
+            settings.CurrentSheetsSettings.ToList().ForEach(s => s.GetType().GetMethod("HasFilter").Invoke(s, new object[] { firstColumn, lastColumn, firstRow, lastRow }));
             return settings;
         }
 
         public static WorkbookSettings HasFreeze(this WorkbookSettings settings, int columnSplit, int rowSplit, int leftMostColumn, int topMostRow)
         {
-            settings.ActiveWorksheetSettings.GetType().GetMethod("HasFreeze").Invoke(settings.ActiveWorksheetSettings, new object[] { columnSplit, rowSplit, leftMostColumn, topMostRow });
+            settings.CurrentSheetsSettings.ToList().ForEach(s => s.GetType().GetMethod("HasFreeze").Invoke(s, new object[] { columnSplit, rowSplit, leftMostColumn, topMostRow }));
             return settings;
         }
 
         public static WorkbookSettings HasIgnoredProperties<T>(this WorkbookSettings settings, params Expression<Func<T, object>>[] propertyExpressions)
             where T : class
         {
-            settings.ActiveWorksheetSettings.GetType().GetMethod("HasIgnoredProperties").Invoke(settings.ActiveWorksheetSettings, propertyExpressions);
+            settings.CurrentSheetsSettings.ToList().ForEach(s => s.GetType().GetMethod("HasIgnoredProperties").Invoke(s, propertyExpressions));
             return settings;
         }
 
         public static WorkbookSettings HasStatistics(this WorkbookSettings settings, string name, string formula, params int[] columnIndexes)
         {
-            settings.ActiveWorksheetSettings.GetType().GetMethod("HasStatistics").Invoke(settings.ActiveWorksheetSettings, new object[] { name, formula, columnIndexes });
+            settings.CurrentSheetsSettings.ToList().ForEach(s => s.GetType().GetMethod("HasStatistics").Invoke(s, new object[] { name, formula, columnIndexes }));
             return settings;
         }
 

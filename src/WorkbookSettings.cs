@@ -55,6 +55,6 @@ namespace FluentExcel
         /// <value>The model fluent configs.</value>
         internal IDictionary<string, IFluentConfiguration> FluentConfigs { get; } = new Dictionary<string, IFluentConfiguration>();
 
-        internal IFluentConfiguration ActiveWorksheetSettings { get; set; }
+        internal HashSet<IFluentConfiguration> CurrentSheetsSettings { get; set; }
     }
 }
