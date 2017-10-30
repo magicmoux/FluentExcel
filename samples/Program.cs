@@ -1,6 +1,8 @@
 ﻿using FluentExcel;
+using FluentExcel.Extensions;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace samples
 {
@@ -39,14 +41,40 @@ namespace samples
             }
             var excelFile = path + "/Documents/sample.xls";
 
-            // save to excel file with multiple sheets based on expression
-            reports.ToExcel(excelFile, r => r.HandleTime.Date.ToString("yyyy-MM"), overwrite: true);
+            //// save to excel file with multiple sheets based on expression
+            //reports.ToExcel(excelFile, r => r.HandleTime.Date.ToString("yyyy-MM"), overwrite: true);
 
-            // save to excel file with multiple sheets based on maxRows
-            reports.ToExcel(excelFile, "reports", 7, overwrite: true);
+            //// save to excel file with multiple sheets based on maxRows
+            //reports.ToExcel(excelFile, "reports", 7, overwrite: true);
 
-            // save to excel file
-            reports.ToExcel(excelFile);
+            //// save to excel file
+            //reports.ToExcel(excelFile);
+
+            // Build a adhoc configuration
+            new WorkbookSettings()
+                .WithWorksheet(reports, "Reports",
+                    // TODO Créer la méthode d'extension Column au lieu de Property
+                    f => f.Property(r => r.Building).HasExcelTitle("Building").IsMergeEnabled(),
+                    f => f.Property(r => r.Area).HasExcelTitle("Area").IsIgnored(false, true),
+                    f => f.Property(r => r.CustomerObj.Id), // TODO trouver comment evaluer le titre de la colonne à partir de l'expression
+                    f => f.Property(r => r.HandleTime).HasExcelTitle("HandleTime").HasDataFormatter("yyyy-MM-dd")
+                )
+                //// Configuration de la feuille Reports
+                //.HasStatistics("合计", "SUM", 6, 7)
+                //    .HasFilter(firstColumn: 0, lastColumn: 2, firstRow: 0)
+                //    .HasFreeze(columnSplit: 2, rowSplit: 1, leftMostColumn: 2, topMostRow: 1)
+                // Passage à la feuille Customers
+                .WithWorksheet(reports.Select(r => r.CustomerObj).Distinct(), "Customers",
+                    f => f.Property(c => c.Id),
+                    f => f.Property(c => c.FirstName),
+                    f => f.Property(c => c.LastName)
+                )
+                //// Configuration de la feuille Customers
+                //.HasStatistics("合计", "SUM", 6, 7)
+                //    .HasFilter(firstColumn: 0, lastColumn: 2, firstRow: 0)
+                //    .HasFreeze(columnSplit: 2, rowSplit: 1, leftMostColumn: 2, topMostRow: 1)
+                .ToExcel(path + "/Documents/adhoc-samples.xls")
+            ;
 
             // load from excel
             var loadFromExcel = Excel.Load<Report>(excelFile);

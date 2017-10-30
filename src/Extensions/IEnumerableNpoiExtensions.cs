@@ -23,22 +23,19 @@ namespace FluentExcel
     {
         private static IFormulaEvaluator _formulaEvaluator;
 
-        public static byte[] ToExcelContent<T>(this IEnumerable<T> source, string sheetName = "sheet0", int maxRowsPerSheet = int.MaxValue, bool overwrite = false)
+        public static byte[] ToExcelContent<T>(this IEnumerable<T> source, string sheetName = "sheet0", int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
             where T : class
         {
-            return ToExcel(source, null, s => sheetName, maxRowsPerSheet, overwrite);
+            return ToExcel(source, null, s => sheetName, maxRowsPerSheet, overwrite, configuration);
         }
 
-        public static void ToExcel<T>(this IEnumerable<T> source, string excelFile, string sheetName = "sheet0", int maxRowsPerSheet = int.MaxValue, bool overwrite = false)
+        [DefaultImplementation]
+        public static byte[] ToExcel<T>(this IEnumerable<T> source, string excelFile, string sheetName = "sheet0", int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
             where T : class
         {
             //TODO check the file's path is valid
-            ToExcel(source, excelFile, s => sheetName, maxRowsPerSheet, overwrite);
-        }
+            //ToExcel(source, excelFile, s => sheetName, maxRowsPerSheet, overwrite, configuration);
 
-        public static byte[] ToExcel<T>(this IEnumerable<T> source, string excelFile, Expression<Func<T, string>> sheetSelector, int maxRowsPerSheet = int.MaxValue, bool overwrite = false)
-            where T : class
-        {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
@@ -70,37 +67,60 @@ namespace FluentExcel
             using (Stream ms = isVolatile ? (Stream)new MemoryStream() : new FileStream(excelFile, FileMode.OpenOrCreate, FileAccess.Write))
             {
                 IEnumerable<byte> output = Enumerable.Empty<byte>();
-                foreach (var sheet in source.AsQueryable().GroupBy(sheetSelector))
+                int sheetIndex = 0;
+                var content = source.Where(i => i != null);
+                while (content.Any())
                 {
-                    int sheetIndex = 0;
-                    var content = sheet.Select(row => row);
-                    while (content.Any())
-                    {
-                        book = content.Take(maxRowsPerSheet).ToWorkbook(book, sheet.Key + (sheetIndex > 0 ? "_" + sheetIndex.ToString() : ""), overwrite);
-                        sheetIndex++;
-                        content = content.Skip(maxRowsPerSheet);
-                    }
+                    book = content.Take(maxRowsPerSheet).ToWorkbook(book, sheetName + (sheetIndex > 0 ? "_" + sheetIndex.ToString() : ""), overwrite, configuration);
+                    sheetIndex++;
+                    content = content.Skip(maxRowsPerSheet);
                 }
                 book.Write(ms);
                 return isVolatile ? ((MemoryStream)ms).ToArray() : null;
             }
         }
 
+        //TODO
+        public static byte[] ToExcel<T>(this IEnumerable<T> source, string excelFile, Expression<Func<T, string>> sheetSelector, int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
+            where T : class
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            IEnumerable<byte> output = Enumerable.Empty<byte>();
+            foreach (var sheet in source.AsQueryable().GroupBy(sheetSelector == null ? s => null : sheetSelector))
+            {
+                var result = ToExcel(sheet.Select(row => row), excelFile, sheet.Key, maxRowsPerSheet, overwrite, configuration);
+                if (result != null) output.Concat(result);
+            }
+            return output.ToArray();
+        }
+
         #region TODO relocate into a "Util" class
 
-        internal static IWorkbook ToWorkbook<T>(this IEnumerable<T> source, IWorkbook workbook, string sheetName, bool overwrite = false)
+        internal static IWorkbook ToWorkbook<T>(this IEnumerable<T> source, IWorkbook workbook, string sheetName, bool overwrite = false, IFluentConfiguration configuration = null)
         {
             #region TODO Handle a specific configuration parameter
 
             // can static properties or only instance properties?
             var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
 
-            bool fluentConfigEnabled = false;
-            // get the fluent config for the sheet if it exists
-            if (Excel.Setting.FluentConfigs.TryGetValue(typeof(T).FullName, out var fluentConfig))
+            bool isConfigured = configuration != null;
+            if (!isConfigured)
             {
-                fluentConfigEnabled = true;
+                // Get the fluent config for the type if it exists
+                if (Excel.Setting.FluentConfigs.TryGetValue(typeof(T).FullName, out configuration))
+                {
+                    isConfigured = true;
+                }
+                else //TODO otherwise try creating is from annotations
+                {
+                    throw new ArgumentException($"No FluentExcel configuration found for type {typeof(T).FullName}");
+                }
             }
+            if (!isConfigured) throw new ArgumentException($"No FluentExcel configuration found for sheet {sheetName}");
 
             // find out the configurations
             var propertyConfigurations = new PropertyConfiguration[properties.Length];
@@ -109,7 +129,7 @@ namespace FluentExcel
                 var property = properties[j];
 
                 // get the property config
-                if (fluentConfigEnabled && fluentConfig.PropertyConfigurations.TryGetValue(property.Name, out var pc))
+                if (isConfigured && configuration.PropertyConfigurations.TryGetValue(property.Name, out var pc))
                 {
                     propertyConfigurations[j] = pc;
                 }
@@ -300,11 +320,11 @@ namespace FluentExcel
                 }
             }
 
-            if (rowIndex > 1 && fluentConfigEnabled)
+            if (rowIndex > 1 && isConfigured)
             {
-                var statistics = fluentConfig.StatisticsConfigurations;
-                var filterConfigs = fluentConfig.FilterConfigurations;
-                var freezeConfigs = fluentConfig.FreezeConfigurations;
+                var statistics = configuration.StatisticsConfigurations;
+                var filterConfigs = configuration.FilterConfigurations;
+                var freezeConfigs = configuration.FreezeConfigurations;
 
                 // statistics row
                 foreach (var item in statistics)

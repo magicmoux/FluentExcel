@@ -79,7 +79,8 @@ namespace FluentExcel
         }
 
         /// <summary>
-        /// Gets the property configuration by the specified property expression for the specified <typeparamref name="TModel"/> and its <typeparamref name="TProperty"/>.
+        /// Gets the property configuration by the specified property expression for the specified
+        /// <typeparamref name="TModel"/> and its <typeparamref name="TProperty"/>.
         /// </summary>
         /// <returns>The <see cref="PropertyConfiguration"/>.</returns>
         /// <param name="propertyExpression">The property expression.</param>
@@ -98,7 +99,8 @@ namespace FluentExcel
         }
 
         /// <summary>
-        /// Gets the property configuration by the specified property info for the specified <typeparamref name="TModel"/>.
+        /// Gets the property configuration by the specified property info for the specified
+        /// <typeparamref name="TModel"/>.
         /// </summary>
         /// <param name="propertyInfo">The property information.</param>
         /// <returns>The <see cref="PropertyConfiguration"/>.</returns>
@@ -142,12 +144,14 @@ namespace FluentExcel
         }
 
         /// <summary>
-        /// Adjust the auto index value for all the has auto index configuration properties of specified <typeparamref name="TModel"/>.
+        /// Adjust the auto index value for all the has auto index configuration properties of
+        /// specified <typeparamref name="TModel"/>.
         /// </summary>
         /// <returns>The <see cref="FluentConfiguration{TModel}"/>.</returns>
         public FluentConfiguration<TModel> AdjustAutoIndex()
         {
-            // TODO: need to fix the bug when the model has some doesn't ignored but hasn't any configuration properties.
+            // TODO: need to fix the bug when the model has some doesn't ignored but hasn't any
+            //       configuration properties.
             var index = 0;
             var autoIndexConfigs = _propertyConfigurations.Values.Where(pc => pc.AutoIndex
                                                                         &&
@@ -168,13 +172,22 @@ namespace FluentExcel
         }
 
         /// <summary>
-        /// Configures the statistics for the specified <typeparamref name="TModel"/>. Only for vertical, not for horizontal statistics.
+        /// Configures the statistics for the specified <typeparamref name="TModel"/>. Only for
+        /// vertical, not for horizontal statistics.
         /// </summary>
         /// <returns>The <see cref="FluentConfiguration{TModel}"/>.</returns>
-        /// <param name="name">The statistics name. (e.g. Total). In current version, the default name location is (last row, first cell)</param>
-        /// <param name="formula">The cell formula, such as SUM, AVERAGE and so on, which applyable for vertical statistics..</param>
-        /// <param name="columnIndexes">The column indexes for statistics. if <paramref name="formula"/>is SUM, and <paramref name="columnIndexes"/> is [1,3], 
-        /// for example, the column No. 1 and 3 will be SUM for first row to last row.</param>
+        /// <param name="name">
+        /// The statistics name. (e.g. Total). In current version, the default name location is (last
+        /// row, first cell)
+        /// </param>
+        /// <param name="formula">
+        /// The cell formula, such as SUM, AVERAGE and so on, which applyable for vertical statistics..
+        /// </param>
+        /// <param name="columnIndexes">
+        /// The column indexes for statistics. if <paramref name="formula"/> is SUM, and <paramref
+        /// name="columnIndexes"/> is [1,3], for example, the column No. 1 and 3 will be SUM for
+        /// first row to last row.
+        /// </param>
         public FluentConfiguration<TModel> HasStatistics(string name, string formula, params int[] columnIndexes)
         {
             var statistics = new StatisticsConfiguration
@@ -196,7 +209,9 @@ namespace FluentExcel
         /// <param name="firstColumn">The first column index.</param>
         /// <param name="lastColumn">The last column index.</param>
         /// <param name="firstRow">The first row index.</param>
-        /// <param name="lastRow">The last row index. If is null, the value is dynamic calculate by code.</param>
+        /// <param name="lastRow">
+        /// The last row index. If is null, the value is dynamic calculate by code.
+        /// </param>
         public FluentConfiguration<TModel> HasFilter(int firstColumn, int lastColumn, int firstRow, int? lastRow = null)
         {
             var filter = new FilterConfiguration
@@ -212,14 +227,12 @@ namespace FluentExcel
             return this;
         }
 
-        /// <summary>
-        /// Configures the excel freeze behaviors for the specified <typeparamref name="TModel"/>.
-        /// </summary>
-        /// <returns>The <see cref="FluentConfiguration{TModel}"/>.</returns>
-        /// <param name="columnSplit">The column number to split.</param>
-        /// <param name="rowSplit">The row number to split.param>
-        /// <param name="leftMostColumn">The left most culomn index.</param>
-        /// <param name="topMostRow">The top most row index.</param>
+        /// <summary> Configures the excel freeze behaviors for the specified <typeparamref
+        /// name="TModel"/>. </summary> <returns>The <see
+        /// cref="FluentConfiguration{TModel}"/>.</returns> <param name="columnSplit">The column
+        /// number to split.</param> <param name="rowSplit">The row number to split.param> <param
+        /// name="leftMostColumn">The left most culomn index.</param> <param name="topMostRow">The
+        /// top most row index.</param>
         public FluentConfiguration<TModel> HasFreeze(int columnSplit, int rowSplit, int leftMostColumn, int topMostRow)
         {
             var freeze = new FreezeConfiguration

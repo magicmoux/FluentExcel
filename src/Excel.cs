@@ -21,7 +21,7 @@ namespace FluentExcel
         /// Gets or sets the setting.
         /// </summary>
         /// <value>The setting.</value>
-        public static ExcelSetting Setting { get; set; } = new ExcelSetting();
+        public static WorkbookSettings Setting { get; set; } = new WorkbookSettings();
 
         /// <summary>
         /// Loading <see cref="IEnumerable{T}"/> from specified excel file. ///

@@ -7,7 +7,7 @@ namespace FluentExcel
     /// <summary>
     /// Represents the all setting for save to and loading from excel.
     /// </summary>
-    public class ExcelSetting
+    public class WorkbookSettings
     {
         /// <summary>
         /// Gets or sets the comany name property of the generated excel file.
@@ -53,5 +53,7 @@ namespace FluentExcel
         /// </summary>
         /// <value>The model fluent configs.</value>
         internal IDictionary<string, IFluentConfiguration> FluentConfigs { get; } = new Dictionary<string, IFluentConfiguration>();
+
+        internal IFluentConfiguration ActiveWorksheetSettings { get; set; }
     }
 }

@@ -3,12 +3,15 @@
 namespace FluentExcel
 {
     using System;
+    using System.Linq.Expressions;
 
     /// <summary>
     /// Represents the configuration for the specfidied property.
     /// </summary>
     public class PropertyConfiguration
     {
+        public Expression Getter { get; set; }
+
         /// <summary>
         /// Gets the title of the excel column.
         /// </summary>
@@ -18,7 +21,8 @@ namespace FluentExcel
         public string Title { get; internal set; }
 
         /// <summary>
-        /// If <see cref="Index"/> was not set and AutoIndex is true FluentExcel will try to autodiscover the excel column index by its <see cref="Title"/> property.
+        /// If <see cref="Index"/> was not set and AutoIndex is true FluentExcel will try to
+        /// autodiscover the excel column index by its <see cref="Title"/> property.
         /// </summary>
         public bool AutoIndex { get; internal set; }
 
@@ -62,7 +66,8 @@ namespace FluentExcel
         /// <returns>The <see cref="PropertyConfiguration"/>.</returns>
         /// <param name="index">The excel cell index.</param>
         /// <remarks>
-        /// If index was not set and AutoIndex is true FluentExcel will try to autodiscover the column index by its title setting.
+        /// If index was not set and AutoIndex is true FluentExcel will try to autodiscover the
+        /// column index by its title setting.
         /// </remarks>
         public PropertyConfiguration HasExcelIndex(int index)
         {
@@ -78,7 +83,8 @@ namespace FluentExcel
         /// <returns>The <see cref="PropertyConfiguration"/>.</returns>
         /// <param name="title">The excel cell title (fist row).</param>
         /// <remarks>
-        /// If the title is string.Empty, will not set the excel cell, and if the title is NULL, the property's name will be used.
+        /// If the title is string.Empty, will not set the excel cell, and if the title is NULL, the
+        /// property's name will be used.
         /// </remarks>
         public PropertyConfiguration HasExcelTitle(string title)
         {
@@ -93,7 +99,8 @@ namespace FluentExcel
         /// <returns>The <see cref="PropertyConfiguration"/>.</returns>
         /// <param name="formatter">The formatter will be used for formatting the value.</param>
         /// <remarks>
-        /// If the title is string.Empty, will not set the excel cell, and if the title is NULL, the property's name will be used.
+        /// If the title is string.Empty, will not set the excel cell, and if the title is NULL, the
+        /// property's name will be used.
         /// </remarks>
         public PropertyConfiguration HasDataFormatter(string formatter)
         {
@@ -103,11 +110,13 @@ namespace FluentExcel
         }
 
         /// <summary>
-        /// Configures whether to autodiscover the column index by its title setting for the specified property.
+        /// Configures whether to autodiscover the column index by its title setting for the
+        /// specified property.
         /// </summary>
         /// <returns>The <see cref="PropertyConfiguration"/>.</returns>
         /// <remarks>
-        /// If index was not set and AutoIndex is true FluentExcel will try to autodiscover the column index by its title setting.
+        /// If index was not set and AutoIndex is true FluentExcel will try to autodiscover the
+        /// column index by its title setting.
         /// </remarks>
         public PropertyConfiguration HasAutoIndex()
         {
@@ -189,14 +198,13 @@ namespace FluentExcel
         }
 
         /// <summary>
-        /// Configures the excel cell for the property with index autodiscover. This method will try to autodiscover the column index by its <paramref name="title"/>
+        /// Configures the excel cell for the property with index autodiscover. This method will try
+        /// to autodiscover the column index by its <paramref name="title"/>
         /// </summary>
         /// <param name="title">The excel cell title (fist row).</param>
         /// <param name="formatter">The formatter will be used for formatting the value.</param>
         /// <param name="allowMerge">If set to <c>true</c> allow merge the same value cells.</param>
-        /// <remarks>
-        /// This method will try to autodiscover the column index by its <paramref name="title"/>
-        /// </remarks>
+        /// <remarks>This method will try to autodiscover the column index by its <paramref name="title"/></remarks>
         /// <param name="valueConverter">The value converter.</param>
         public void HasAutoIndexExcelCell(string title, string formatter = null, bool allowMerge = false, Func<object, object> valueConverter = null)
         {
