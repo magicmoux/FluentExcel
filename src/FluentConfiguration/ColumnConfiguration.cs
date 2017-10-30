@@ -10,7 +10,7 @@ namespace FluentExcel
     /// </summary>
     public class ColumnConfiguration
     {
-        public LambdaExpression Expression { get; set; }
+        public LambdaExpression Expression { get; internal set; }
 
         /// <summary>
         /// Gets the title of the excel column.

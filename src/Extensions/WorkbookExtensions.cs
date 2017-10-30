@@ -10,9 +10,10 @@ namespace FluentExcel.Extensions
 {
     public static class WorkbookExtensions
     {
+        #region Configuration methods
+
         private static Dictionary<Tuple<WorkbookSettings, string>, IEnumerable> worksheetsData = new Dictionary<Tuple<WorkbookSettings, string>, IEnumerable>();
 
-        //TODO handle sheet groups when using GroupBy
         public static WorkbookSettings WithWorksheet<T>(this WorkbookSettings settings, IEnumerable<IGrouping<string, T>> worksheetData, string name = null, params Expression<Func<FluentConfiguration<T>, ColumnConfiguration>>[] columns)
             where T : class
         {
@@ -100,6 +101,10 @@ namespace FluentExcel.Extensions
             return settings;
         }
 
+        #endregion
+
+        #region output methods
+
         public static byte[] GetBytes(this WorkbookSettings settings, int maxRowsPerSheet = int.MaxValue, bool overwrite = false)
         {
             IWorkbook book = Utils.InitializeWorkbook(null);
@@ -162,5 +167,7 @@ namespace FluentExcel.Extensions
                 }
             }
         }
+
+        #endregion
     }
 }

@@ -151,8 +151,7 @@ namespace FluentExcel
 
                     // check whether is statics row
                     if (idx > startRow + 1 && index == 0
-                        &&
-                        statistics.Any(s => s.Name.Equals(value.ToString(), StringComparison.InvariantCultureIgnoreCase)))
+                        && statistics.Any(s => s.Name.Equals(value.ToString(), StringComparison.InvariantCultureIgnoreCase)))
                     {
                         var st = statistics.FirstOrDefault(s => s.Name.Equals(value.ToString(), StringComparison.InvariantCultureIgnoreCase));
                         var formula = row.GetCellValue(st.Columns.First()).ToString();
@@ -181,67 +180,6 @@ namespace FluentExcel
         }
 
         #region TODO relocate into a "Util" class
-
-        internal static object GetCellValue(this IRow row, int index, IFormulaEvaluator eval = null)
-        {
-            var cell = row.GetCell(index);
-            if (cell == null)
-            {
-                return null;
-            }
-
-            return cell.GetCellValue(eval);
-        }
-
-        internal static object GetCellValue(this ICell cell, IFormulaEvaluator eval = null)
-        {
-            if (cell.IsMergedCell)
-            {
-                // what can I do here?
-            }
-
-            switch (cell.CellType)
-            {
-                case CellType.Numeric:
-                    if (DateUtil.IsCellDateFormatted(cell))
-                    {
-                        return cell.DateCellValue;
-                    }
-                    else
-                    {
-                        return cell.NumericCellValue;
-                    }
-                case CellType.String:
-                    return cell.StringCellValue;
-
-                case CellType.Boolean:
-                    return cell.BooleanCellValue;
-
-                case CellType.Error:
-                    return FormulaError.ForInt(cell.ErrorCellValue).String;
-
-                case CellType.Formula:
-                    if (eval != null)
-                        return GetCellValue(eval.EvaluateInCell(cell));
-                    else
-                        return cell.CellFormula;
-
-                case CellType.Blank:
-                case CellType.Unknown:
-                default:
-                    return null;
-            }
-        }
-
-        internal static object GetDefault(this Type type)
-        {
-            if (type.IsValueType)
-            {
-                return Activator.CreateInstance(type);
-            }
-
-            return null;
-        }
 
         private static IWorkbook InitializeWorkbook(string excelFile)
         {

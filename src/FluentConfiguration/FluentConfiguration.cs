@@ -146,10 +146,10 @@ namespace FluentExcel
             {
                 try
                 {
-                    var propertyInfo = GetPropertyInfo(propertyExpression);
+                    var propertyInfo = Utils.GetPropertyInfo(propertyExpression);
                     return Property(propertyInfo);
                 }
-                catch (InvalidOperationException ex)
+                catch (InvalidOperationException)
                 {
                 }
             }
@@ -196,7 +196,7 @@ namespace FluentExcel
         {
             foreach (var propertyExpression in propertyExpressions)
             {
-                var propertyInfo = GetPropertyInfo(propertyExpression);
+                var propertyInfo = Utils.GetPropertyInfo(propertyExpression);
 
                 if (!_propertyConfigurations.TryGetValue(propertyInfo.Name, out var pc))
                 {
@@ -314,48 +314,5 @@ namespace FluentExcel
 
             return this;
         }
-
-        #region relocate into Utils
-
-        private PropertyInfo GetPropertyInfo<TProperty>(Expression<Func<TModel, TProperty>> propertyExpression)
-        {
-            if (propertyExpression.NodeType != ExpressionType.Lambda)
-            {
-                throw new ArgumentException($"{nameof(propertyExpression)} must be lambda expression", nameof(propertyExpression));
-            }
-
-            var lambda = (LambdaExpression)propertyExpression;
-
-            var memberExpression = ExtractMemberExpression(lambda.Body);
-            if (memberExpression == null)
-            {
-                throw new ArgumentException($"{nameof(propertyExpression)} must be lambda expression", nameof(propertyExpression));
-            }
-
-            if (memberExpression.Member.DeclaringType == null)
-            {
-                throw new InvalidOperationException("Property does not have declaring type");
-            }
-
-            return memberExpression.Member.DeclaringType.GetProperty(memberExpression.Member.Name);
-        }
-
-        private MemberExpression ExtractMemberExpression(Expression expression)
-        {
-            if (expression.NodeType == ExpressionType.MemberAccess)
-            {
-                return ((MemberExpression)expression);
-            }
-
-            if (expression.NodeType == ExpressionType.Convert)
-            {
-                var operand = ((UnaryExpression)expression).Operand;
-                return ExtractMemberExpression(operand);
-            }
-
-            return null;
-        }
-
-        #endregion
     }
 }

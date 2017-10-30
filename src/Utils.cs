@@ -15,16 +15,6 @@ using System.Reflection;
 
 namespace FluentExcel
 {
-    /// <summary>
-    /// Attribute to mark a method implementation as the defaulted when several signatures are defined
-    /// </summary>
-    /// <seealso cref="System.Attribute"/>
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    internal class DefaultImplementationAttribute
-        : Attribute
-    {
-    }
-
     internal static class Utils
     {
         private static IFormulaEvaluator _formulaEvaluator;
@@ -351,6 +341,57 @@ namespace FluentExcel
             return ((char)col) + row.ToString();
         }
 
+        internal static object GetCellValue(this IRow row, int index, IFormulaEvaluator eval = null)
+        {
+            var cell = row.GetCell(index);
+            if (cell == null)
+            {
+                return null;
+            }
+
+            return cell.GetCellValue(eval);
+        }
+
+        internal static object GetCellValue(this ICell cell, IFormulaEvaluator eval = null)
+        {
+            if (cell.IsMergedCell)
+            {
+                // what can I do here?
+            }
+
+            switch (cell.CellType)
+            {
+                case CellType.Numeric:
+                    if (DateUtil.IsCellDateFormatted(cell))
+                    {
+                        return cell.DateCellValue;
+                    }
+                    else
+                    {
+                        return cell.NumericCellValue;
+                    }
+                case CellType.String:
+                    return cell.StringCellValue;
+
+                case CellType.Boolean:
+                    return cell.BooleanCellValue;
+
+                case CellType.Error:
+                    return FormulaError.ForInt(cell.ErrorCellValue).String;
+
+                case CellType.Formula:
+                    if (eval != null)
+                        return GetCellValue(eval.EvaluateInCell(cell));
+                    else
+                        return cell.CellFormula;
+
+                case CellType.Blank:
+                case CellType.Unknown:
+                default:
+                    return null;
+            }
+        }
+
         internal static string GetColumnTitle(LambdaExpression expr, string separator = " ")
         {
             var stack = new Stack<string>();
@@ -376,6 +417,55 @@ namespace FluentExcel
             }
 
             return string.Join(separator, stack.ToArray());
+        }
+
+        internal static PropertyInfo GetPropertyInfo<TModel, TProperty>(Expression<Func<TModel, TProperty>> propertyExpression)
+        {
+            if (propertyExpression.NodeType != ExpressionType.Lambda)
+            {
+                throw new ArgumentException($"{nameof(propertyExpression)} must be lambda expression", nameof(propertyExpression));
+            }
+
+            var lambda = (LambdaExpression)propertyExpression;
+
+            var memberExpression = ExtractMemberExpression(lambda.Body);
+            if (memberExpression == null)
+            {
+                throw new ArgumentException($"{nameof(propertyExpression)} must be lambda expression", nameof(propertyExpression));
+            }
+
+            if (memberExpression.Member.DeclaringType == null)
+            {
+                throw new InvalidOperationException("Property does not have declaring type");
+            }
+
+            return memberExpression.Member.DeclaringType.GetProperty(memberExpression.Member.Name);
+        }
+
+        private static MemberExpression ExtractMemberExpression(Expression expression)
+        {
+            if (expression.NodeType == ExpressionType.MemberAccess)
+            {
+                return ((MemberExpression)expression);
+            }
+
+            if (expression.NodeType == ExpressionType.Convert)
+            {
+                var operand = ((UnaryExpression)expression).Operand;
+                return ExtractMemberExpression(operand);
+            }
+
+            return null;
+        }
+
+        internal static object GetDefault(this Type type)
+        {
+            if (type.IsValueType)
+            {
+                return Activator.CreateInstance(type);
+            }
+
+            return null;
         }
     }
 }
