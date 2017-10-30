@@ -278,7 +278,6 @@ namespace FluentExcel
         internal static IWorkbook InitializeWorkbook(string excelFile = null)
         {
             //TODO check the file's path is valid
-
             if (!string.IsNullOrWhiteSpace(excelFile) && File.Exists(excelFile))
             {
                 var extension = Path.GetExtension(excelFile);
@@ -286,6 +285,21 @@ namespace FluentExcel
                 return workbook;
             }
             var setting = Excel.Setting;
+            if (!string.IsNullOrWhiteSpace(excelFile))
+            {
+                if (Path.GetExtension(excelFile) == "xlsx")
+                {
+                    setting.UserXlsx = true;
+                }
+                else if (Path.GetExtension(excelFile) == "xlsx")
+                {
+                    setting.UserXlsx = false;
+                }
+                else
+                {
+                    throw new NotSupportedException($"Not an excel file : {excelFile}");
+                }
+            }
             if (setting.UserXlsx)
             {
                 var workbook = new XSSFWorkbook();
