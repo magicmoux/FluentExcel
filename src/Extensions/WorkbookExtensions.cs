@@ -105,7 +105,7 @@ namespace FluentExcel.Extensions
 
         #region output methods
 
-        public static byte[] GetBytes(this WorkbookSettings settings, int maxRowsPerSheet = int.MaxValue, bool overwrite = false)
+        public static byte[] GetBytes(this WorkbookSettings settings, int maxRowsPerSheet = int.MaxValue, bool overwrite = true)
         {
             IWorkbook book = Utils.InitializeWorkbook(null);
             var worksheets = worksheetsData.Keys.Where(k => k.Item1 == settings).ToList();
@@ -137,7 +137,7 @@ namespace FluentExcel.Extensions
             }
         }
 
-        public static void SaveAs(this WorkbookSettings settings, string excelFile, int maxRowsPerSheet = int.MaxValue, bool overwrite = false)
+        public static void SaveAs(this WorkbookSettings settings, string excelFile, int maxRowsPerSheet = int.MaxValue, bool overwrite = true)
         {
             IWorkbook book = Utils.InitializeWorkbook(excelFile);
             var worksheets = worksheetsData.Keys.Where(k => k.Item1 == settings).ToList();

@@ -19,7 +19,7 @@ namespace FluentExcel
     {
         //private static IFormulaEvaluator _formulaEvaluator;
 
-        public static void ToWorksheet<T>(this IEnumerable<T> source, IWorkbook workbook, string sheetName, int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
+        public static void ToWorksheet<T>(this IEnumerable<T> source, IWorkbook workbook, string sheetName, int maxRowsPerSheet = int.MaxValue, bool overwrite = true, IFluentConfiguration configuration = null)
             where T : class
         {
             int sheetIndex = 0;
@@ -33,7 +33,7 @@ namespace FluentExcel
         }
 
         //TODO change overwrite defaulting to true
-        private static void BuildWorksheet<T>(this IEnumerable<T> source, IWorkbook workbook, string sheetName, bool overwrite = false, IFluentConfiguration configuration = null)
+        private static void BuildWorksheet<T>(this IEnumerable<T> source, IWorkbook workbook, string sheetName, bool overwrite = true, IFluentConfiguration configuration = null)
             where T : class
         {
             bool isConfigured = configuration != null;
