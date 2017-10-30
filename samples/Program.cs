@@ -13,10 +13,6 @@ namespace samples
             // global call this
             FluentConfiguration();
 
-            // demo the extension point
-            Excel.Setting.For<Report>().FromAnnotations()
-                                       .AdjustAutoIndex();
-
             var len = 20;
             var reports = new Report[len];
             for (int i = 0; i < len; i++)
@@ -41,38 +37,39 @@ namespace samples
             }
             var excelFile = path + "/Documents/sample.xls";
 
-            //// save to excel file with multiple sheets based on expression
-            //reports.ToExcel(excelFile, r => r.HandleTime.Date.ToString("yyyy-MM"), overwrite: true);
+            // save to excel file with multiple sheets based on expression
+            reports.ToExcel(excelFile, r => r.HandleTime.Date.ToString("yyyy-MM"), overwrite: true);
 
-            //// save to excel file with multiple sheets based on maxRows
-            //reports.ToExcel(excelFile, "reports", 7, overwrite: true);
+            // save to excel file with multiple sheets based on maxRows
+            reports.ToExcel(excelFile, "reports", 7, overwrite: true);
 
-            //// save to excel file
-            //reports.ToExcel(excelFile);
+            // save to excel file
+            reports.ToExcel(excelFile, overwrite: true);
 
             // Build a adhoc configuration
             new WorkbookSettings()
                 .WithWorksheet(reports, "Reports",
                     // TODO Créer la méthode d'extension Column au lieu de Property
-                    f => f.Property(r => r.Building).HasExcelTitle("Building").IsMergeEnabled(),
-                    f => f.Property(r => r.Area).HasExcelTitle("Area").IsIgnored(false, true),
-                    f => f.Property(r => r.CustomerObj.Id), // TODO trouver comment evaluer le titre de la colonne à partir de l'expression
-                    f => f.Property(r => r.HandleTime).HasExcelTitle("HandleTime").HasDataFormatter("yyyy-MM-dd")
+                    f => f.Column(r => r.City).IsMergeEnabled(),
+                    f => f.Column(r => r.Building).HasExcelTitle("Building").IsMergeEnabled(),
+                    f => f.Column(r => r.Area).HasExcelTitle("Area").IsIgnored(false, true),
+                    f => f.Column(r => r.CustomerObj.Id), // TODO trouver comment evaluer le titre de la colonne à partir de l'expression
+                    f => f.Column(r => r.HandleTime).HasExcelTitle("HandleTime").HasDataFormatter("yyyy-MM-dd")
                 )
-                //// Configuration de la feuille Reports
-                //.HasStatistics("合计", "SUM", 6, 7)
-                //    .HasFilter(firstColumn: 0, lastColumn: 2, firstRow: 0)
-                //    .HasFreeze(columnSplit: 2, rowSplit: 1, leftMostColumn: 2, topMostRow: 1)
+                // Configuration de la feuille Reports
+                .HasStatistics("合计", "SUM", 6, 7)
+                    .HasFilter(firstColumn: 0, lastColumn: 2, firstRow: 0)
+                    .HasFreeze(columnSplit: 2, rowSplit: 1, leftMostColumn: 2, topMostRow: 1)
                 // Passage à la feuille Customers
                 .WithWorksheet(reports.Select(r => r.CustomerObj).Distinct(), "Customers",
-                    f => f.Property(c => c.Id),
-                    f => f.Property(c => c.FirstName),
-                    f => f.Property(c => c.LastName)
+                    f => f.Column(c => c.Id),
+                    f => f.Column(c => c.FirstName),
+                    f => f.Column(c => c.LastName)
                 )
-                //// Configuration de la feuille Customers
-                //.HasStatistics("合计", "SUM", 6, 7)
-                //    .HasFilter(firstColumn: 0, lastColumn: 2, firstRow: 0)
-                //    .HasFreeze(columnSplit: 2, rowSplit: 1, leftMostColumn: 2, topMostRow: 1)
+                // Configuration de la feuille Customers
+                .HasStatistics("合计", "SUM", 6, 7)
+                    .HasFilter(firstColumn: 0, lastColumn: 2, firstRow: 0)
+                    .HasFreeze(columnSplit: 2, rowSplit: 1, leftMostColumn: 2, topMostRow: 1)
                 .ToExcel(path + "/Documents/adhoc-samples.xls")
             ;
 
@@ -91,7 +88,7 @@ namespace samples
               .HasFilter(firstColumn: 0, lastColumn: 2, firstRow: 0)
               .HasFreeze(columnSplit: 2, rowSplit: 1, leftMostColumn: 2, topMostRow: 1);
 
-            fc.Property(r => r.City)
+            fc.Column(r => r.City)
               .HasExcelIndex(0)
               .HasExcelTitle("城市")
               .IsMergeEnabled();
@@ -99,13 +96,13 @@ namespace samples
             // or
             //fc.Property(r => r.City).HasExcelCell(0,"城市", allowMerge: true);
 
-            fc.Property(r => r.Building)
+            fc.Column(r => r.Building)
               .HasExcelIndex(1)
               .HasExcelTitle("楼盘")
               .IsMergeEnabled();
 
             // configures the ignore when exporting or importing.
-            fc.Property(r => r.Area)
+            fc.Column(r => r.Area)
               .HasExcelIndex(8)
               .HasExcelTitle("Area")
               .IsIgnored(exportingIsIgnored: false, importingIsIgnored: true);
@@ -113,7 +110,7 @@ namespace samples
             // or
             //fc.Property(r => r.Area).IsIgnored(8, "Area", formatter: null, exportingIsIgnored: false, importingIsIgnored: true);
 
-            fc.Property(r => r.HandleTime)
+            fc.Column(r => r.HandleTime)
               .HasExcelIndex(2)
               .HasExcelTitle("成交时间")
               .HasDataFormatter("yyyy-MM-dd");
@@ -123,24 +120,24 @@ namespace samples
             // or
             //fc.Property(r => r.HandleTime).HasExcelCell(2, "成交时间", "yyyy-MM-dd");
 
-            fc.Property(r => r.Broker)
+            fc.Column(r => r.Broker)
               .HasExcelIndex(3)
               .HasExcelTitle("经纪人");
 
-            fc.Property(r => r.Customer)
+            fc.Column(r => r.Customer)
               .HasExcelIndex(4)
               .HasExcelTitle("客户");
 
-            fc.Property(r => r.Room)
+            fc.Column(r => r.Room)
               .HasExcelIndex(5)
               .HasExcelTitle("房源");
 
-            fc.Property(r => r.Brokerage)
+            fc.Column(r => r.Brokerage)
               .HasExcelIndex(6)
               .HasDataFormatter("￥0.00")
               .HasExcelTitle("佣金(元)");
 
-            fc.Property(r => r.Profits)
+            fc.Column(r => r.Profits)
               .HasExcelIndex(7)
               .HasExcelTitle("收益(元)");
         }

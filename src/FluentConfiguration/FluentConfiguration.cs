@@ -4,6 +4,7 @@ namespace FluentExcel
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
@@ -14,17 +15,58 @@ namespace FluentExcel
     /// <typeparam name="TModel">The type of model.</typeparam>
     public class FluentConfiguration<TModel> : IFluentConfiguration where TModel : class
     {
-        private Dictionary<string, PropertyConfiguration> _propertyConfigurations;
+        private List<ColumnConfiguration> _columnConfigurations;
+        private Dictionary<string, ColumnConfiguration> _propertyConfigurations;
         private List<StatisticsConfiguration> _statisticsConfigurations;
         private List<FilterConfiguration> _filterConfigurations;
         private List<FreezeConfiguration> _freezeConfigurations;
+
+        public static FluentConfiguration<TModel> FromAnnotations()
+        {
+            FluentConfiguration<TModel> fluentConfiguration = new FluentConfiguration<TModel>();
+            var properties = typeof(TModel).GetProperties();
+            foreach (var property in properties)
+            {
+                var pc = fluentConfiguration.Property(property);
+
+                var display = property.GetCustomAttribute<DisplayAttribute>();
+                if (display != null)
+                {
+                    pc.HasExcelTitle(display.Name);
+                    if (display.GetOrder().HasValue)
+                    {
+                        pc.HasExcelIndex(display.Order);
+                    }
+                }
+                else
+                {
+                    pc.HasExcelTitle(property.Name);
+                }
+
+                var format = property.GetCustomAttribute<DisplayFormatAttribute>();
+                if (format != null)
+                {
+                    pc.HasDataFormatter(format.DataFormatString
+                                              .Replace("{0:", "")
+                                              .Replace("}", ""));
+                }
+
+                if (pc.Index < 0)
+                {
+                    pc.HasAutoIndex();
+                }
+            }
+
+            return fluentConfiguration;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FluentConfiguration{TModel}"/> class.
         /// </summary>
         internal FluentConfiguration()
         {
-            _propertyConfigurations = new Dictionary<string, PropertyConfiguration>();
+            _columnConfigurations = new List<ColumnConfiguration>();
+            _propertyConfigurations = new Dictionary<string, ColumnConfiguration>();
             _statisticsConfigurations = new List<StatisticsConfiguration>();
             _filterConfigurations = new List<FilterConfiguration>();
             _freezeConfigurations = new List<FreezeConfiguration>();
@@ -34,11 +76,23 @@ namespace FluentExcel
         /// Gets the property configurations.
         /// </summary>
         /// <value>The property configs.</value>
-        public IReadOnlyDictionary<string, PropertyConfiguration> PropertyConfigurations
+        public IReadOnlyDictionary<string, ColumnConfiguration> PropertyConfigurations
         {
             get
             {
                 return _propertyConfigurations;
+            }
+        }
+
+        /// <summary>
+        /// Gets the columns configurations.
+        /// </summary>
+        /// <value>The columns config.</value>
+        public IReadOnlyList<ColumnConfiguration> ColumnConfigurations
+        {
+            get
+            {
+                return _columnConfigurations.AsReadOnly();
             }
         }
 
@@ -82,19 +136,27 @@ namespace FluentExcel
         /// Gets the property configuration by the specified property expression for the specified
         /// <typeparamref name="TModel"/> and its <typeparamref name="TProperty"/>.
         /// </summary>
-        /// <returns>The <see cref="PropertyConfiguration"/>.</returns>
+        /// <returns>The <see cref="ColumnConfiguration"/>.</returns>
         /// <param name="propertyExpression">The property expression.</param>
         /// <typeparam name="TProperty">The type of parameter.</typeparam>
-        public PropertyConfiguration Property<TProperty>(Expression<Func<TModel, TProperty>> propertyExpression)
+        public ColumnConfiguration Column<TProperty>(Expression<Func<TModel, TProperty>> propertyExpression)
         {
-            var propertyInfo = GetPropertyInfo(propertyExpression);
-
-            if (!_propertyConfigurations.TryGetValue(propertyInfo.Name, out var pc))
+            ColumnConfiguration pc;
+            if (propertyExpression.Body is MemberExpression)
             {
-                pc = new PropertyConfiguration();
-                _propertyConfigurations[propertyInfo.Name] = pc;
+                try
+                {
+                    var propertyInfo = GetPropertyInfo(propertyExpression);
+                    return Property(propertyInfo);
+                }
+                catch (InvalidOperationException ex)
+                {
+                }
             }
-
+            pc = new ColumnConfiguration();
+            pc.Expression = propertyExpression;
+            pc.HasExcelTitle(Utils.GetColumnTitle(pc.Expression));
+            _columnConfigurations.Add(pc);
             return pc;
         }
 
@@ -103,8 +165,8 @@ namespace FluentExcel
         /// <typeparamref name="TModel"/>.
         /// </summary>
         /// <param name="propertyInfo">The property information.</param>
-        /// <returns>The <see cref="PropertyConfiguration"/>.</returns>
-        public PropertyConfiguration Property(PropertyInfo propertyInfo)
+        /// <returns>The <see cref="ColumnConfiguration"/>.</returns>
+        public ColumnConfiguration Property(PropertyInfo propertyInfo)
         {
             if (propertyInfo.DeclaringType != typeof(TModel))
             {
@@ -113,8 +175,13 @@ namespace FluentExcel
 
             if (!_propertyConfigurations.TryGetValue(propertyInfo.Name, out var pc))
             {
-                pc = new PropertyConfiguration();
+                pc = new ColumnConfiguration();
+                var paramExpression = Expression.Parameter(typeof(TModel), "x");
+                var memberExpression = Expression.Property(paramExpression, propertyInfo);
+                pc.Expression = Expression.Lambda(memberExpression, paramExpression);
+                pc.HasExcelTitle(Utils.GetColumnTitle(pc.Expression));
                 _propertyConfigurations[propertyInfo.Name] = pc;
+                _columnConfigurations.Add(pc);
             }
 
             return pc;
@@ -133,7 +200,7 @@ namespace FluentExcel
 
                 if (!_propertyConfigurations.TryGetValue(propertyInfo.Name, out var pc))
                 {
-                    pc = new PropertyConfiguration();
+                    pc = new ColumnConfiguration();
                     _propertyConfigurations[propertyInfo.Name] = pc;
                 }
 
@@ -248,6 +315,8 @@ namespace FluentExcel
             return this;
         }
 
+        #region relocate into Utils
+
         private PropertyInfo GetPropertyInfo<TProperty>(Expression<Func<TModel, TProperty>> propertyExpression)
         {
             if (propertyExpression.NodeType != ExpressionType.Lambda)
@@ -286,5 +355,7 @@ namespace FluentExcel
 
             return null;
         }
+
+        #endregion
     }
 }

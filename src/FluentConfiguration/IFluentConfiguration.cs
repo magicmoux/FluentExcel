@@ -13,7 +13,13 @@ namespace FluentExcel
         /// Gets the property configurations.
         /// </summary>
         /// <value>The property configs.</value>
-        IReadOnlyDictionary<string, PropertyConfiguration> PropertyConfigurations { get; }
+        IReadOnlyDictionary<string, ColumnConfiguration> PropertyConfigurations { get; }
+
+        /// <summary>
+        /// Gets the columns configurations.
+        /// </summary>
+        /// <value>The columns config.</value>
+        IReadOnlyList<ColumnConfiguration> ColumnConfigurations { get; }
 
         /// <summary>
         /// Gets the statistics configurations.

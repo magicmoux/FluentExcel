@@ -40,8 +40,9 @@ namespace FluentExcel
             var type = typeof(TModel);
             if (!FluentConfigs.TryGetValue(type.FullName, out var mc) || refreshCache)
             {
-                mc = new FluentConfiguration<TModel>();
-
+                mc = FluentConfiguration<TModel>
+                        .FromAnnotations()
+                        .AdjustAutoIndex();
                 FluentConfigs[type.FullName] = mc;
             }
 

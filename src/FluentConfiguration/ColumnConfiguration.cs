@@ -8,9 +8,9 @@ namespace FluentExcel
     /// <summary>
     /// Represents the configuration for the specfidied property.
     /// </summary>
-    public class PropertyConfiguration
+    public class ColumnConfiguration
     {
-        public Expression Getter { get; set; }
+        public LambdaExpression Expression { get; set; }
 
         /// <summary>
         /// Gets the title of the excel column.
@@ -63,13 +63,13 @@ namespace FluentExcel
         /// <summary>
         /// Configures the excel cell index for the property.
         /// </summary>
-        /// <returns>The <see cref="PropertyConfiguration"/>.</returns>
+        /// <returns>The <see cref="ColumnConfiguration"/>.</returns>
         /// <param name="index">The excel cell index.</param>
         /// <remarks>
         /// If index was not set and AutoIndex is true FluentExcel will try to autodiscover the
         /// column index by its title setting.
         /// </remarks>
-        public PropertyConfiguration HasExcelIndex(int index)
+        public ColumnConfiguration HasExcelIndex(int index)
         {
             Index = index;
             AutoIndex = false;
@@ -80,13 +80,13 @@ namespace FluentExcel
         /// <summary>
         /// Configures the excel title (first row) for the property.
         /// </summary>
-        /// <returns>The <see cref="PropertyConfiguration"/>.</returns>
+        /// <returns>The <see cref="ColumnConfiguration"/>.</returns>
         /// <param name="title">The excel cell title (fist row).</param>
         /// <remarks>
         /// If the title is string.Empty, will not set the excel cell, and if the title is NULL, the
         /// property's name will be used.
         /// </remarks>
-        public PropertyConfiguration HasExcelTitle(string title)
+        public ColumnConfiguration HasExcelTitle(string title)
         {
             Title = title;
 
@@ -96,13 +96,13 @@ namespace FluentExcel
         /// <summary>
         /// Configures the formatter will be used for formatting the value for the property.
         /// </summary>
-        /// <returns>The <see cref="PropertyConfiguration"/>.</returns>
+        /// <returns>The <see cref="ColumnConfiguration"/>.</returns>
         /// <param name="formatter">The formatter will be used for formatting the value.</param>
         /// <remarks>
         /// If the title is string.Empty, will not set the excel cell, and if the title is NULL, the
         /// property's name will be used.
         /// </remarks>
-        public PropertyConfiguration HasDataFormatter(string formatter)
+        public ColumnConfiguration HasDataFormatter(string formatter)
         {
             Formatter = formatter;
 
@@ -113,12 +113,12 @@ namespace FluentExcel
         /// Configures whether to autodiscover the column index by its title setting for the
         /// specified property.
         /// </summary>
-        /// <returns>The <see cref="PropertyConfiguration"/>.</returns>
+        /// <returns>The <see cref="ColumnConfiguration"/>.</returns>
         /// <remarks>
         /// If index was not set and AutoIndex is true FluentExcel will try to autodiscover the
         /// column index by its title setting.
         /// </remarks>
-        public PropertyConfiguration HasAutoIndex()
+        public ColumnConfiguration HasAutoIndex()
         {
             AutoIndex = true;
             Index = -1;
@@ -130,8 +130,8 @@ namespace FluentExcel
         /// Configures the value converter for the specified property.
         /// </summary>
         /// <param name="valueConverter">The value converter.</param>
-        /// <returns>The <see cref="PropertyConfiguration"/>.</returns>
-        public PropertyConfiguration HasValueConverter(Func<object, object> valueConverter)
+        /// <returns>The <see cref="ColumnConfiguration"/>.</returns>
+        public ColumnConfiguration HasValueConverter(Func<object, object> valueConverter)
         {
             ValueConverter = valueConverter;
 
@@ -141,8 +141,8 @@ namespace FluentExcel
         /// <summary>
         /// Configures whether to allow merge the same value cells for the specified property.
         /// </summary>
-        /// <returns>The <see cref="PropertyConfiguration"/>.</returns>
-        public PropertyConfiguration IsMergeEnabled()
+        /// <returns>The <see cref="ColumnConfiguration"/>.</returns>
+        public ColumnConfiguration IsMergeEnabled()
         {
             AllowMerge = true;
 
@@ -154,7 +154,7 @@ namespace FluentExcel
         /// </summary>
         /// <param name="exportingIsIgnored">If set to <c>true</c> exporting is ignored.</param>
         /// <param name="importingIsIgnored">If set to <c>true</c> importing is ignored.</param>
-        public PropertyConfiguration IsIgnored(bool exportingIsIgnored, bool importingIsIgnored)
+        public ColumnConfiguration IsIgnored(bool exportingIsIgnored, bool importingIsIgnored)
         {
             IsExportIgnored = exportingIsIgnored;
             IsImportIgnored = importingIsIgnored;

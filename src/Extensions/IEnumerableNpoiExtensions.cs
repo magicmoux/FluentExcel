@@ -69,7 +69,7 @@ namespace FluentExcel
                 IEnumerable<byte> output = Enumerable.Empty<byte>();
                 int sheetIndex = 0;
                 var content = source.Where(i => i != null);
-                while (content.Any())
+                while (sheetIndex == 0 || content.Any())
                 {
                     book = content.Take(maxRowsPerSheet).ToWorkbook(book, sheetName + (sheetIndex > 0 ? "_" + sheetIndex.ToString() : ""), overwrite, configuration);
                     sheetIndex++;
@@ -80,7 +80,6 @@ namespace FluentExcel
             }
         }
 
-        //TODO
         public static byte[] ToExcel<T>(this IEnumerable<T> source, string excelFile, Expression<Func<T, string>> sheetSelector, int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
             where T : class
         {
@@ -100,18 +99,16 @@ namespace FluentExcel
 
         #region TODO relocate into a "Util" class
 
+        //TODO replace properties by the configuration and change overwrite defaulting to true
         internal static IWorkbook ToWorkbook<T>(this IEnumerable<T> source, IWorkbook workbook, string sheetName, bool overwrite = false, IFluentConfiguration configuration = null)
+            where T : class
         {
-            #region TODO Handle a specific configuration parameter
-
-            // can static properties or only instance properties?
-            var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
-
             bool isConfigured = configuration != null;
             if (!isConfigured)
             {
+                configuration = Excel.Setting.For<T>(false);
                 // Get the fluent config for the type if it exists
-                if (Excel.Setting.FluentConfigs.TryGetValue(typeof(T).FullName, out configuration))
+                if (configuration != null)
                 {
                     isConfigured = true;
                 }
@@ -122,25 +119,6 @@ namespace FluentExcel
             }
             if (!isConfigured) throw new ArgumentException($"No FluentExcel configuration found for sheet {sheetName}");
 
-            // find out the configurations
-            var propertyConfigurations = new PropertyConfiguration[properties.Length];
-            for (var j = 0; j < properties.Length; j++)
-            {
-                var property = properties[j];
-
-                // get the property config
-                if (isConfigured && configuration.PropertyConfigurations.TryGetValue(property.Name, out var pc))
-                {
-                    propertyConfigurations[j] = pc;
-                }
-                else
-                {
-                    propertyConfigurations[j] = null;
-                }
-            }
-
-            #endregion
-
             // new sheet
             //TODO check the sheet's name is valid
             var sheet = workbook.GetSheet(sheetName);
@@ -150,7 +128,7 @@ namespace FluentExcel
             }
             else
             {
-                // doesn't override the exist sheet if not required
+                // doesn't override the existing sheet if not required
                 if (!overwrite) sheet = workbook.CreateSheet();
             }
 
@@ -169,93 +147,87 @@ namespace FluentExcel
 
             #endregion
 
+            var columns = configuration.ColumnConfigurations.Where(c => !c.IsExportIgnored).OrderBy(c => c.Index).ToList();
+            var valueProviders = columns.Select(c => c.Expression.Compile()).ToList();
+
             var titleRow = sheet.CreateRow(0);
+            for (var i = 0; i < columns.Count; i++)
+            {
+                var colConfig = columns[i];
+                var title = colConfig.Title;
+                if (!string.IsNullOrEmpty(colConfig?.Formatter))
+                {
+                    try
+                    {
+                        var style = workbook.CreateCellStyle();
+                        var dataFormat = workbook.CreateDataFormat();
+                        style.DataFormat = dataFormat.GetFormat(colConfig.Formatter);
+                        cellStyles[i] = style;
+                    }
+                    catch (Exception ex)
+                    {
+                        // the formatter isn't excel supported formatter
+                        System.Diagnostics.Debug.WriteLine(ex.ToString());
+                    }
+                }
+
+                var titleCell = titleRow.CreateCell(i);
+                titleCell.CellStyle = titleStyle;
+                titleCell.SetCellValue(title);
+            }
             var rowIndex = 1;
             foreach (var item in source)
             {
                 var row = sheet.CreateRow(rowIndex);
-                for (var i = 0; i < properties.Length; i++)
+                for (var i = 0; i < columns.Count; i++)
                 {
-                    var property = properties[i];
-
                     int index = i;
-                    var config = propertyConfigurations[i];
-                    if (config != null)
+                    var colConfig = columns[i];
+                    var valueProvider = valueProviders[i];
+
+                    //if (colConfig != null)
+                    //{
+                    //if (colConfig.IsExportIgnored)
+                    //    continue;
+
+                    // index = colConfig.Index;
+
+                    //    //TODO check this
+                    //    //if (index < 0 && !colConfig.AutoIndex)
+                    //    //    throw new Exception($"The excel cell index value hasn't been configured for the property: {property.Name}, see HasExcelIndex(int index) or AdjustAutoIndex() methods for more informations.");
+                    //}
+
+                    var unwrapType = valueProvider.Method.ReturnType.UnwrapNullableType();
+                    object value = null;
+                    try
                     {
-                        if (config.IsExportIgnored)
-                            continue;
-
-                        index = config.Index;
-
-                        if (index < 0 && !config.AutoIndex)
-                            throw new Exception($"The excel cell index value hasn't been configured for the property: {property.Name}, see HasExcelIndex(int index) or AdjustAutoIndex() methods for more informations.");
+                        value = valueProvider.DynamicInvoke(item);
                     }
-
-                    // this is the first time.
-                    if (rowIndex == 1)
+                    catch (TargetInvocationException)
                     {
-                        // if not title, using property name as title.
-                        var title = property.Name;
-                        if (!string.IsNullOrEmpty(config?.Title))
-                        {
-                            title = config.Title;
-                        }
-
-                        if (!string.IsNullOrEmpty(config?.Formatter))
-                        {
-                            try
-                            {
-                                var style = workbook.CreateCellStyle();
-
-                                var dataFormat = workbook.CreateDataFormat();
-
-                                style.DataFormat = dataFormat.GetFormat(config.Formatter);
-
-                                cellStyles[i] = style;
-                            }
-                            catch (Exception ex)
-                            {
-                                // the formatter isn't excel supported formatter
-                                System.Diagnostics.Debug.WriteLine(ex.ToString());
-                            }
-                        }
-
-                        var titleCell = titleRow.CreateCell(index);
-                        titleCell.CellStyle = titleStyle;
-                        titleCell.SetCellValue(title);
                     }
-
-                    var unwrapType = property.PropertyType.UnwrapNullableType();
-
-                    var value = property.GetValue(item, null);
 
                     // give a chance to the value converter even though value is null.
-                    if (config?.ValueConverter != null)
+                    if (colConfig?.ValueConverter != null)
                     {
-                        value = config.ValueConverter(value);
-                        if (value == null)
-                            continue;
-
+                        value = colConfig.ValueConverter(value);
+                        if (value == null) continue;
                         unwrapType = value.GetType().UnwrapNullableType();
                     }
-
-                    if (value == null)
-                        continue;
+                    if (value == null) continue;
 
                     var cell = row.CreateCell(index);
                     if (cellStyles.TryGetValue(i, out var cellStyle))
                     {
                         cell.CellStyle = cellStyle;
                     }
-                    else if (!string.IsNullOrEmpty(config?.Formatter) && value is IFormattable fv)
+                    else if (!string.IsNullOrEmpty(colConfig?.Formatter) && value is IFormattable fv)
                     {
                         // the formatter isn't excel supported formatter, but it's a C# formatter.
                         // The result is the Excel cell data type become String.
-                        cell.SetCellValue(fv.ToString(config.Formatter, CultureInfo.CurrentCulture));
-
+                        cell.SetCellValue(fv.ToString(colConfig.Formatter, CultureInfo.CurrentCulture));
                         continue;
                     }
-
                     if (unwrapType == typeof(bool))
                     {
                         cell.SetCellValue((bool)value);
@@ -276,52 +248,56 @@ namespace FluentExcel
                         cell.SetCellValue(value.ToString());
                     }
                 }
-
                 rowIndex++;
             }
 
-            // merge cells
-            var mergableConfigs = propertyConfigurations.Where(c => c != null && c.AllowMerge).ToList();
-            if (mergableConfigs.Any())
+            if (rowIndex > 1)
             {
-                // merge cell style
-                var vStyle = workbook.CreateCellStyle();
-                vStyle.VerticalAlignment = VerticalAlignment.Center;
-
-                foreach (var config in mergableConfigs)
+                // merge cells
+                var mergableConfigs = columns.Where(c => c != null && c.AllowMerge).ToList();
+                if (mergableConfigs.Any())
                 {
-                    object previous = null;
-                    int rowspan = 0, row = 1;
-                    for (row = 1; row < rowIndex; row++)
-                    {
-                        var value = sheet.GetRow(row).GetCellValue(config.Index, _formulaEvaluator);
-                        if (object.Equals(previous, value) && value != null)
-                        {
-                            rowspan++;
-                        }
-                        else
-                        {
-                            if (rowspan > 1)
-                            {
-                                sheet.GetRow(row - rowspan).Cells[config.Index].CellStyle = vStyle;
-                                sheet.AddMergedRegion(new CellRangeAddress(row - rowspan, row - 1, config.Index, config.Index));
-                            }
-                            rowspan = 1;
-                            previous = value;
-                        }
-                    }
+                    #region TODO make this configurable
 
-                    // in what case? -> all rows need to be merged
-                    if (rowspan > 1)
+                    // merge cell style
+
+                    var vStyle = workbook.CreateCellStyle();
+                    vStyle.VerticalAlignment = VerticalAlignment.Center;
+
+                    #endregion
+
+                    foreach (var config in mergableConfigs)
                     {
-                        sheet.GetRow(row - rowspan).Cells[config.Index].CellStyle = vStyle;
-                        sheet.AddMergedRegion(new CellRangeAddress(row - rowspan, row - 1, config.Index, config.Index));
+                        object previous = null;
+                        int rowspan = 0, row = 1;
+                        for (row = 1; row < rowIndex; row++)
+                        {
+                            var value = sheet.GetRow(row).GetCellValue(config.Index, _formulaEvaluator);
+                            if (object.Equals(previous, value) && value != null)
+                            {
+                                rowspan++;
+                            }
+                            else
+                            {
+                                if (rowspan > 1)
+                                {
+                                    sheet.GetRow(row - rowspan).Cells[config.Index].CellStyle = vStyle;
+                                    sheet.AddMergedRegion(new CellRangeAddress(row - rowspan, row - 1, config.Index, config.Index));
+                                }
+                                rowspan = 1;
+                                previous = value;
+                            }
+                        }
+
+                        // in what case? -> all rows need to be merged
+                        if (rowspan > 1)
+                        {
+                            sheet.GetRow(row - rowspan).Cells[config.Index].CellStyle = vStyle;
+                            sheet.AddMergedRegion(new CellRangeAddress(row - rowspan, row - 1, config.Index, config.Index));
+                        }
                     }
                 }
-            }
 
-            if (rowIndex > 1 && isConfigured)
-            {
                 var statistics = configuration.StatisticsConfigurations;
                 var filterConfigs = configuration.FilterConfigurations;
                 var freezeConfigs = configuration.FreezeConfigurations;
@@ -360,7 +336,7 @@ namespace FluentExcel
             }
 
             // autosize the all columns
-            for (int i = 0; i < properties.Length; i++)
+            for (int i = 0; i < columns.Count; i++)
             {
                 sheet.AutoSizeColumn(i);
             }

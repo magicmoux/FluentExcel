@@ -11,7 +11,14 @@ namespace FluentExcel.Extensions
     {
         private static Dictionary<Tuple<WorkbookSettings, string>, IEnumerable> worksheetsData = new Dictionary<Tuple<WorkbookSettings, string>, IEnumerable>();
 
-        public static WorkbookSettings WithWorksheet<T>(this WorkbookSettings settings, IEnumerable<T> worksheetData, string name = null, params Expression<Func<FluentConfiguration<T>, PropertyConfiguration>>[] columns)
+        //TODO implement this DRY
+        public static WorkbookSettings WithWorksheets<T>(this WorkbookSettings settings, IGrouping<string, T> worksheetData, string name = null, params Expression<Func<FluentConfiguration<T>, ColumnConfiguration>>[] columns)
+            where T : class
+        {
+            throw new NotSupportedException("Not supported yet");
+        }
+
+        public static WorkbookSettings WithWorksheet<T>(this WorkbookSettings settings, IEnumerable<T> worksheetData, string name = null, params Expression<Func<FluentConfiguration<T>, ColumnConfiguration>>[] columns)
             where T : class
         {
             // Handles the sheet name automatically if none is provided
@@ -31,19 +38,28 @@ namespace FluentExcel.Extensions
             // Stores the datasource for the current sheet;
             worksheetsData[new Tuple<WorkbookSettings, string>(settings, sheetName)] = worksheetData;
 
-            // Sets the current configuration active sheet
-            FluentConfiguration<T> worksheet = new FluentConfiguration<T>();
-            settings.ActiveWorksheetSettings = worksheet;
-            settings.FluentConfigs[sheetName] = worksheet;
-
             // Applies the columns definitions to the sheet
             int colIndex = 0;
-            foreach (var columnSettings in columns)
+            FluentConfiguration<T> worksheet;
+            if (columns.Any())
             {
-                PropertyConfiguration col = columnSettings.Compile().Invoke(worksheet);
-                col.HasExcelIndex(colIndex);
-                colIndex++;
+                worksheet = new FluentConfiguration<T>();
+                settings.FluentConfigs[sheetName] = worksheet;
+
+                foreach (var columnSettings in columns)
+                {
+                    ColumnConfiguration col = columnSettings.Compile().Invoke(worksheet);
+                    col.HasExcelIndex(colIndex);
+                    colIndex++;
+                }
             }
+            else
+            {
+                worksheet = Excel.Setting.For<T>();
+                settings.FluentConfigs[sheetName] = worksheet;
+            }
+            // Sets the current configuration active sheet
+            settings.ActiveWorksheetSettings = worksheet;
             return settings;
         }
 

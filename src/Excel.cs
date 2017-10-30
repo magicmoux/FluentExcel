@@ -53,7 +53,7 @@ namespace FluentExcel
                 fluentConfigEnabled = true;
             }
 
-            var propertyConfigurations = new PropertyConfiguration[properties.Length];
+            var propertyConfigurations = new ColumnConfiguration[properties.Length];
             for (var j = 0; j < properties.Length; j++)
             {
                 var property = properties[j];
