@@ -38,13 +38,13 @@ namespace samples
             var excelFile = path + "/Documents/sample.xls";
 
             // save to excel file with multiple sheets based on expression
-            reports.ToExcel(excelFile, r => r.HandleTime.Date.ToString("yyyy-MM"), overwrite: true);
+            reports.SaveAs(excelFile, r => r.HandleTime.Date.ToString("yyyy-MM"), overwrite: true);
 
             // save to excel file with multiple sheets based on maxRows
-            reports.ToExcel(excelFile, "reports", 7, overwrite: true);
+            reports.SaveAs(excelFile, "reports", 7, overwrite: true);
 
             // save to excel file
-            reports.ToExcel(excelFile, overwrite: true);
+            reports.SaveAs(excelFile, overwrite: true);
 
             // Build a adhoc configuration
             new WorkbookSettings()
@@ -67,7 +67,7 @@ namespace samples
                 .HasStatistics("合计", "SUM", 6, 7)
                     .HasFilter(firstColumn: 0, lastColumn: 2, firstRow: 0)
                     .HasFreeze(columnSplit: 2, rowSplit: 1, leftMostColumn: 2, topMostRow: 1)
-                .ToExcel(path + "/Documents/adhoc-samples.xls", overwrite: true)
+                .SaveAs(path + "/Documents/adhoc-samples.xls", overwrite: true)
             ;
 
             // load from excel

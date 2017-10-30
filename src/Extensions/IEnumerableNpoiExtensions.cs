@@ -14,7 +14,7 @@ namespace FluentExcel
     /// </summary>
     public static class IEnumerableNpoiExtensions
     {
-        public static byte[] ToExcelContent<T>(this IEnumerable<T> source, string sheetName = "sheet0", int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
+        public static byte[] GetBytes<T>(this IEnumerable<T> source, string sheetName = "sheet0", int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
             where T : class
         {
             if (source == null)
@@ -31,7 +31,7 @@ namespace FluentExcel
             }
         }
 
-        public static byte[] ToExcelContent<T>(this IEnumerable<T> source, Expression<Func<T, string>> sheetSelector, int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
+        public static byte[] GetBytes<T>(this IEnumerable<T> source, Expression<Func<T, string>> sheetSelector, int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
              where T : class
         {
             if (source == null)
@@ -51,7 +51,7 @@ namespace FluentExcel
             }
         }
 
-        public static void ToExcel<T>(this IEnumerable<T> source, string excelFile, string sheetName = "sheet0", int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
+        public static void SaveAs<T>(this IEnumerable<T> source, string excelFile, string sheetName = "sheet0", int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
             where T : class
         {
             if (source == null)
@@ -67,7 +67,7 @@ namespace FluentExcel
             }
         }
 
-        public static void ToExcel<T>(this IEnumerable<T> source, string excelFile, Expression<Func<T, string>> sheetSelector, int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
+        public static void SaveAs<T>(this IEnumerable<T> source, string excelFile, Expression<Func<T, string>> sheetSelector, int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
             where T : class
         {
             if (source == null)
