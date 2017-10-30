@@ -297,7 +297,7 @@ namespace FluentExcel
                 }
                 else
                 {
-                    throw new NotSupportedException($"Not an excel file : {excelFile}");
+                    throw new NotSupportedException($"Not a workbook : {excelFile}");
                 }
             }
             if (setting.UserXlsx)
