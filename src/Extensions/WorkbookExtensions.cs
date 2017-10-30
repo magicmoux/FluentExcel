@@ -1,9 +1,10 @@
-﻿using System;
+﻿using NPOI.SS.UserModel;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace FluentExcel.Extensions
 {
@@ -99,20 +100,57 @@ namespace FluentExcel.Extensions
             return settings;
         }
 
-        //TODO create the ToExcelContent method as well
-        public static void ToExcel(this WorkbookSettings settings, string excelFile, int maxRowsPerSheet = int.MaxValue, bool overwrite = false)
+        public static byte[] ToExcelContent(this WorkbookSettings settings, string excelFile, int maxRowsPerSheet = int.MaxValue, bool overwrite = false)
         {
+            IWorkbook book = Utils.InitializeWorkbook(excelFile);
             var worksheets = worksheetsData.Keys.Where(k => k.Item1 == settings).ToList();
             try
             {
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    // TODO DRY this
+                    foreach (var key in worksheets)
+                    {
+                        var sheetName = key.Item2;
+                        var configuration = settings.FluentConfigs[sheetName];
+                        var model = configuration.GetType().GetGenericArguments()[0];
+                        var source = worksheetsData[key];
+                        var toExcelImplementation = typeof(Utils).GetMethod("ToWorksheet");
+                        toExcelImplementation.MakeGenericMethod(model).Invoke(null, new object[] { source, book, sheetName, maxRowsPerSheet, overwrite, configuration });
+                    }
+                    book.Write(ms);
+                    return ms.ToArray();
+                }
+            }
+            finally
+            {
+                // Cleans up the worksheetsData dictionary
                 foreach (var key in worksheets)
                 {
-                    var sheetName = key.Item2;
-                    var configuration = settings.FluentConfigs[sheetName];
-                    var model = configuration.GetType().GetGenericArguments()[0];
-                    var source = worksheetsData[key];
-                    var toExcelImplementation = typeof(IEnumerableNpoiExtensions).GetMethods().Where(m => m.Name == "ToExcel" && m.GetCustomAttribute<DefaultImplementationAttribute>() != null).FirstOrDefault();
-                    toExcelImplementation.MakeGenericMethod(model).Invoke(null, new object[] { source, excelFile, sheetName, maxRowsPerSheet, overwrite, configuration });
+                    worksheetsData.Remove(key);
+                }
+            }
+        }
+
+        public static void ToExcel(this WorkbookSettings settings, string excelFile, int maxRowsPerSheet = int.MaxValue, bool overwrite = false)
+        {
+            IWorkbook book = Utils.InitializeWorkbook(excelFile);
+            var worksheets = worksheetsData.Keys.Where(k => k.Item1 == settings).ToList();
+            try
+            {
+                using (Stream ms = new FileStream(excelFile, FileMode.OpenOrCreate, FileAccess.Write))
+                {
+                    // TODO DRY this
+                    foreach (var key in worksheets)
+                    {
+                        var sheetName = key.Item2;
+                        var configuration = settings.FluentConfigs[sheetName];
+                        var model = configuration.GetType().GetGenericArguments()[0];
+                        var source = worksheetsData[key];
+                        var toExcelImplementation = typeof(Utils).GetMethod("ToWorksheet");
+                        toExcelImplementation.MakeGenericMethod(model).Invoke(null, new object[] { source, book, sheetName, maxRowsPerSheet, overwrite, configuration });
+                    }
+                    book.Write(ms);
                 }
             }
             finally

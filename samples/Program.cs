@@ -49,7 +49,6 @@ namespace samples
             // Build a adhoc configuration
             new WorkbookSettings()
                 .WithWorksheet(reports.GroupBy(r => r.HandleTime.Date.ToString("yyyy-MM")), "Reports",
-                    // TODO Créer la méthode d'extension Column au lieu de Property
                     f => f.Column(r => r.City).IsMergeEnabled(),
                     f => f.Column(r => r.Building).HasExcelTitle("Building").IsMergeEnabled(),
                     f => f.Column(r => r.Area).HasExcelTitle("Area").IsIgnored(false, true),
@@ -63,11 +62,7 @@ namespace samples
                     .HasFilter(firstColumn: 0, lastColumn: 2, firstRow: 0)
                     .HasFreeze(columnSplit: 2, rowSplit: 1, leftMostColumn: 2, topMostRow: 1)
                 // Passage à la feuille Customers
-                .WithWorksheet(reports.Select(r => r.CustomerObj).Distinct(), "Customers",
-                    f => f.Column(c => c.Id),
-                    f => f.Column(c => c.FirstName),
-                    f => f.Column(c => c.LastName)
-                )
+                .WithWorksheet(reports.Select(r => r.CustomerObj).Distinct(), "Customers")
                 // Configuration de la feuille Customers
                 .HasStatistics("合计", "SUM", 6, 7)
                     .HasFilter(firstColumn: 0, lastColumn: 2, firstRow: 0)
