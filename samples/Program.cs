@@ -48,16 +48,18 @@ namespace samples
 
             // Build a adhoc configuration
             new WorkbookSettings()
-                .WithWorksheet(reports, "Reports",
+                .WithWorksheet(reports.GroupBy(r => r.HandleTime.Date.ToString("yyyy-MM")), "Reports",
                     // TODO Créer la méthode d'extension Column au lieu de Property
                     f => f.Column(r => r.City).IsMergeEnabled(),
                     f => f.Column(r => r.Building).HasExcelTitle("Building").IsMergeEnabled(),
                     f => f.Column(r => r.Area).HasExcelTitle("Area").IsIgnored(false, true),
                     f => f.Column(r => r.CustomerObj.Id), // TODO trouver comment evaluer le titre de la colonne à partir de l'expression
-                    f => f.Column(r => r.HandleTime).HasExcelTitle("HandleTime").HasDataFormatter("yyyy-MM-dd")
+                    f => f.Column(r => r.HandleTime).HasExcelTitle("HandleTime").HasDataFormatter("yyyy-MM-dd"),
+                    f => f.Column(r => r.Brokerage).HasDataFormatter("￥0.00"),
+                    f => f.Column(r => r.Profits).HasDataFormatter("￥0.00")
                 )
                 // Configuration de la feuille Reports
-                .HasStatistics("合计", "SUM", 6, 7)
+                .HasStatistics("合计", "SUM", 5, 6)
                     .HasFilter(firstColumn: 0, lastColumn: 2, firstRow: 0)
                     .HasFreeze(columnSplit: 2, rowSplit: 1, leftMostColumn: 2, topMostRow: 1)
                 // Passage à la feuille Customers

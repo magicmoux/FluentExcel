@@ -11,11 +11,15 @@ namespace FluentExcel.Extensions
     {
         private static Dictionary<Tuple<WorkbookSettings, string>, IEnumerable> worksheetsData = new Dictionary<Tuple<WorkbookSettings, string>, IEnumerable>();
 
-        //TODO implement this DRY
-        public static WorkbookSettings WithWorksheets<T>(this WorkbookSettings settings, IGrouping<string, T> worksheetData, string name = null, params Expression<Func<FluentConfiguration<T>, ColumnConfiguration>>[] columns)
+        //TODO handle sheet groups when using GroupBy
+        public static WorkbookSettings WithWorksheet<T>(this WorkbookSettings settings, IEnumerable<IGrouping<string, T>> worksheetData, string name = null, params Expression<Func<FluentConfiguration<T>, ColumnConfiguration>>[] columns)
             where T : class
         {
-            throw new NotSupportedException("Not supported yet");
+            foreach (var group in worksheetData)
+            {
+                WithWorksheet<T>(settings, group, group.Key, columns);
+            }
+            return settings;
         }
 
         public static WorkbookSettings WithWorksheet<T>(this WorkbookSettings settings, IEnumerable<T> worksheetData, string name = null, params Expression<Func<FluentConfiguration<T>, ColumnConfiguration>>[] columns)

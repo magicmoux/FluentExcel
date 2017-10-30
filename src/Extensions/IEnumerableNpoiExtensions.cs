@@ -91,7 +91,7 @@ namespace FluentExcel
             IEnumerable<byte> output = Enumerable.Empty<byte>();
             foreach (var sheet in source.AsQueryable().GroupBy(sheetSelector == null ? s => null : sheetSelector))
             {
-                var result = ToExcel(sheet.Select(row => row), excelFile, sheet.Key, maxRowsPerSheet, overwrite, configuration);
+                var result = ToExcel(sheet, excelFile, sheet.Key, maxRowsPerSheet, overwrite, configuration);
                 if (result != null) output.Concat(result);
             }
             return output.ToArray();
