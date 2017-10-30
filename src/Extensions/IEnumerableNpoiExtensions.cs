@@ -14,6 +14,34 @@ namespace FluentExcel
     /// </summary>
     public static class IEnumerableNpoiExtensions
     {
+        [Obsolete("Use GetBytes instead")]
+        public static byte[] ToExcelContent<T>(this IEnumerable<T> source, Expression<Func<T, string>> sheetSelector, int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
+            where T : class
+        {
+            return GetBytes(source, sheetSelector, maxRowsPerSheet, overwrite, configuration);
+        }
+
+        [Obsolete("Use GetBytes instead")]
+        public static byte[] ToExcelContent<T>(this IEnumerable<T> source, string sheetName = "sheet0", int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
+            where T : class
+        {
+            return GetBytes(source, sheetName, maxRowsPerSheet, overwrite, configuration);
+        }
+
+        [Obsolete("Use GetBytes instead")]
+        public static void ToExcel<T>(this IEnumerable<T> source, string excelFile, string sheetName = "sheet0", int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
+            where T : class
+        {
+            SaveAs(source, excelFile, sheetName, maxRowsPerSheet, overwrite, configuration);
+        }
+
+        [Obsolete("Use GetBytes instead")]
+        public static void ToExcel<T>(this IEnumerable<T> source, string excelFile, Expression<Func<T, string>> sheetSelector, int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
+            where T : class
+        {
+            SaveAs(source, excelFile, sheetSelector, maxRowsPerSheet, overwrite, configuration);
+        }
+
         public static byte[] GetBytes<T>(this IEnumerable<T> source, string sheetName = "sheet0", int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
             where T : class
         {
