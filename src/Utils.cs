@@ -17,7 +17,7 @@ namespace FluentExcel
 {
     internal static class Utils
     {
-        private static IFormulaEvaluator _formulaEvaluator;
+        //private static IFormulaEvaluator _formulaEvaluator;
 
         public static void ToWorksheet<T>(this IEnumerable<T> source, IWorkbook workbook, string sheetName, int maxRowsPerSheet = int.MaxValue, bool overwrite = false, IFluentConfiguration configuration = null)
             where T : class
@@ -205,7 +205,7 @@ namespace FluentExcel
                         int rowspan = 0, row = 1;
                         for (row = 1; row < rowIndex; row++)
                         {
-                            var value = sheet.GetRow(row).GetCellValue(config.Index, _formulaEvaluator);
+                            var value = sheet.GetRow(row).GetCellValue(config.Index, workbook.GetCreationHelper().CreateFormulaEvaluator());
                             if (object.Equals(previous, value) && value != null)
                             {
                                 rowspan++;
@@ -275,62 +275,33 @@ namespace FluentExcel
             }
         }
 
-        internal static IWorkbook InitializeWorkbook(string excelFile)
+        internal static IWorkbook InitializeWorkbook(string excelFile = null)
         {
             //TODO check the file's path is valid
+
+            if (!string.IsNullOrWhiteSpace(excelFile) && File.Exists(excelFile))
+            {
+                var extension = Path.GetExtension(excelFile);
+                var workbook = WorkbookFactory.Create(new FileStream(excelFile, FileMode.Open, FileAccess.Read));
+                return workbook;
+            }
             var setting = Excel.Setting;
             if (setting.UserXlsx)
             {
-                if (!string.IsNullOrWhiteSpace(excelFile) && File.Exists(excelFile))
-                {
-                    using (var file = new FileStream(excelFile, FileMode.Open, FileAccess.Read))
-                    {
-                        var workbook = new XSSFWorkbook(file);
-
-                        _formulaEvaluator = new XSSFFormulaEvaluator(workbook);
-
-                        return workbook;
-                    }
-                }
-                else
-                {
-                    var workbook = new XSSFWorkbook();
-
-                    _formulaEvaluator = new XSSFFormulaEvaluator(workbook);
-
-                    return workbook;
-                }
+                var workbook = new XSSFWorkbook();
+                return workbook;
             }
             else
             {
-                if (!string.IsNullOrWhiteSpace(excelFile) && File.Exists(excelFile))
-                {
-                    using (var file = new FileStream(excelFile, FileMode.Open, FileAccess.Read))
-                    {
-                        var workbook = new HSSFWorkbook(file);
-
-                        _formulaEvaluator = new HSSFFormulaEvaluator(workbook);
-
-                        return workbook;
-                    }
-                }
-                else
-                {
-                    var workbook = new HSSFWorkbook();
-
-                    _formulaEvaluator = new HSSFFormulaEvaluator(workbook);
-
-                    var dsi = PropertySetFactory.CreateDocumentSummaryInformation();
-                    dsi.Company = setting.Company;
-                    workbook.DocumentSummaryInformation = dsi;
-
-                    var si = PropertySetFactory.CreateSummaryInformation();
-                    si.Author = setting.Author;
-                    si.Subject = setting.Subject;
-                    workbook.SummaryInformation = si;
-
-                    return workbook;
-                }
+                var workbook = new HSSFWorkbook();
+                var dsi = PropertySetFactory.CreateDocumentSummaryInformation();
+                dsi.Company = setting.Company;
+                workbook.DocumentSummaryInformation = dsi;
+                var si = PropertySetFactory.CreateSummaryInformation();
+                si.Author = setting.Author;
+                si.Subject = setting.Subject;
+                workbook.SummaryInformation = si;
+                return workbook;
             }
         }
 

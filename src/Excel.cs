@@ -15,8 +15,6 @@ namespace FluentExcel
     /// </summary>
     public static class Excel
     {
-        private static IFormulaEvaluator _formulaEvaluator;
-
         /// <summary>
         /// Gets or sets the setting.
         /// </summary>
@@ -38,7 +36,7 @@ namespace FluentExcel
                 throw new FileNotFoundException();
             }
 
-            var workbook = InitializeWorkbook(excelFile);
+            var workbook = Utils.InitializeWorkbook(excelFile);
 
             // currently, only handle sheet one (or call side using foreach to support multiple sheet)
             var sheet = workbook.GetSheetAt(sheetIndex);
@@ -136,7 +134,7 @@ namespace FluentExcel
                         }
                     }
 
-                    var value = row.GetCellValue(index, _formulaEvaluator);
+                    var value = row.GetCellValue(index, workbook.GetCreationHelper().CreateFormulaEvaluator());
 
                     // give a chance to the value converter.
                     if (config?.ValueConverter != null)
@@ -178,17 +176,5 @@ namespace FluentExcel
 
             return list;
         }
-
-        #region TODO relocate into a "Util" class
-
-        private static IWorkbook InitializeWorkbook(string excelFile)
-        {
-            var extension = Path.GetExtension(excelFile);
-            var workbook = WorkbookFactory.Create(new FileStream(excelFile, FileMode.Open, FileAccess.Read));
-            _formulaEvaluator = workbook.GetCreationHelper().CreateFormulaEvaluator();
-            return workbook;
-        }
-
-        #endregion
     }
 }
