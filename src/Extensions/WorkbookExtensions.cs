@@ -95,6 +95,8 @@ namespace FluentExcel.Extensions
             return settings;
         }
 
+        //TODO make statistics a dictionary to avoid duplicated configuratoin between default config and adhoc calls
+        //TODO allow for Named columns/range settings to avoid calculating target indices manually
         public static WorkbookSettings HasStatistics(this WorkbookSettings settings, string name, string formula, params int[] columnIndexes)
         {
             settings.CurrentSheetsSettings.ToList().ForEach(s => s.GetType().GetMethod("HasStatistics").Invoke(s, new object[] { name, formula, columnIndexes }));

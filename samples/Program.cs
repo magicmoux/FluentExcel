@@ -50,13 +50,13 @@ namespace samples
             var excelFile = path + "/Documents/sample.xls";
 
             // save to excel file with multiple sheets based on expression
-            reports.SaveAs(excelFile, r => r.HandleTime.Date.ToString("yyyy-MM"), overwrite: true);
+            reports.SaveAs(excelFile, r => r.HandleTime.Date.ToString("yyyy-MM"));
 
             // save to excel file with multiple sheets based on maxRows
-            reports.SaveAs(excelFile, "reports", 7, overwrite: true);
+            reports.SaveAs(excelFile, "reports", 7);
 
             // save to excel file
-            reports.SaveAs(excelFile, overwrite: true);
+            reports.SaveAs(excelFile);
 
             // Build a adhoc configuration
             new WorkbookSettings()
@@ -64,7 +64,7 @@ namespace samples
                     f => f.Column(r => r.City).IsMergeEnabled(),
                     f => f.Column(r => r.Building).HasExcelTitle("Building").IsMergeEnabled(),
                     f => f.Column(r => r.Area).HasExcelTitle("Area").IsIgnored(false, true),
-                    f => f.Column(r => r.CustomerObj.Id), // TODO trouver comment evaluer le titre de la colonne à partir de l'expression
+                    f => f.Column(r => r.CustomerObj.Id),
                     f => f.Column(r => r.HandleTime).HasExcelTitle("HandleTime").HasDataFormatter("yyyy-MM-dd"),
                     f => f.Column(r => r.Brokerage).HasDataFormatter("￥0.00"),
                     f => f.Column(r => r.Profits).HasDataFormatter("￥0.00")
@@ -79,7 +79,7 @@ namespace samples
                 .HasStatistics("合计", "SUM", 6, 7)
                     .HasFilter(firstColumn: 0, lastColumn: 2, firstRow: 0)
                     .HasFreeze(columnSplit: 2, rowSplit: 1, leftMostColumn: 2, topMostRow: 1)
-                .SaveAs(path + "/Documents/adhoc-samples.xls", overwrite: true)
+                .SaveAs(path + "/Documents/adhoc-samples.xls")
             ;
 
             // load from excel

@@ -123,6 +123,7 @@ namespace FluentExcel
                     }
                     catch (TargetInvocationException)
                     {
+                        // ignore null reference exceptions as empty cells
                     }
 
                     // give a chance to the value converter even though value is null.

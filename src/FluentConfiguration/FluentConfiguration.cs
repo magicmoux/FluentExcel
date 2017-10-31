@@ -1,5 +1,6 @@
 ﻿// Copyright (c) rigofunc (xuyingting). All rights reserved.
 
+//TODO add methods for nested object/collections properties
 namespace FluentExcel
 {
     using System;
@@ -10,7 +11,7 @@ namespace FluentExcel
     using System.Reflection;
 
     /// <summary>
-    /// Represents the fluent configuration for the specfidied model.
+    /// Represents the fluent configuration for the specified model/worksheet.
     /// </summary>
     /// <typeparam name="TModel">The type of model.</typeparam>
     public class FluentConfiguration<TModel> : IFluentConfiguration where TModel : class
