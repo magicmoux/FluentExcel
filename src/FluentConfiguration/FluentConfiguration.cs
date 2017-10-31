@@ -146,11 +146,14 @@ namespace FluentExcel
             {
                 try
                 {
+                    // tries to build a "native" property column
                     var propertyInfo = Utils.GetPropertyInfo(propertyExpression);
                     return Property(propertyInfo);
                 }
                 catch (InvalidOperationException)
                 {
+                    // if the property does not belong to the current model we fallback by building a
+                    // standard column
                 }
             }
             pc = new ColumnConfiguration();

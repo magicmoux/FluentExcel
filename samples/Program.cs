@@ -14,7 +14,18 @@ namespace samples
             FluentConfiguration();
 
             var len = 20;
+            var customers = new Customer[5];
             var reports = new Report[len];
+            var randomizer = new Random();
+            for (int i = 0; i < customers.Length; i++)
+            {
+                customers[i] = new Customer()
+                {
+                    Id = i,
+                    LastName = $"Customer#{i}",
+                    FirstName = "Unknown",
+                };
+            }
             for (int i = 0; i < len; i++)
             {
                 reports[i] = new Report
@@ -26,7 +37,8 @@ namespace samples
                     Customer = "yingting 18957139**7",
                     Room = "2#1703",
                     Brokerage = 125 * i,
-                    Profits = 25 * i
+                    Profits = 25 * i,
+                    CustomerObj = customers[randomizer.Next(customers.Length)]
                 };
             }
 

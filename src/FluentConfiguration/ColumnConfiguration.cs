@@ -73,7 +73,6 @@ namespace FluentExcel
         {
             Index = index;
             AutoIndex = false;
-
             return this;
         }
 
@@ -89,7 +88,6 @@ namespace FluentExcel
         public ColumnConfiguration HasExcelTitle(string title)
         {
             Title = title;
-
             return this;
         }
 
@@ -105,7 +103,6 @@ namespace FluentExcel
         public ColumnConfiguration HasDataFormatter(string formatter)
         {
             Formatter = formatter;
-
             return this;
         }
 
@@ -122,7 +119,6 @@ namespace FluentExcel
         {
             AutoIndex = true;
             Index = -1;
-
             return this;
         }
 
@@ -134,7 +130,6 @@ namespace FluentExcel
         public ColumnConfiguration HasValueConverter(Func<object, object> valueConverter)
         {
             ValueConverter = valueConverter;
-
             return this;
         }
 
@@ -145,7 +140,6 @@ namespace FluentExcel
         public ColumnConfiguration IsMergeEnabled()
         {
             AllowMerge = true;
-
             return this;
         }
 
@@ -158,7 +152,6 @@ namespace FluentExcel
         {
             IsExportIgnored = exportingIsIgnored;
             IsImportIgnored = importingIsIgnored;
-
             return this;
         }
 

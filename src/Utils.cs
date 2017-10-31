@@ -85,7 +85,7 @@ namespace FluentExcel
             {
                 var colConfig = columns[i];
                 var title = colConfig.Title;
-                if (!string.IsNullOrEmpty(colConfig?.Formatter))
+                if (!string.IsNullOrEmpty(colConfig.Formatter))
                 {
                     try
                     {
@@ -115,18 +115,6 @@ namespace FluentExcel
                     var colConfig = columns[i];
                     var valueProvider = valueProviders[i];
 
-                    //if (colConfig != null)
-                    //{
-                    //if (colConfig.IsExportIgnored)
-                    //    continue;
-
-                    // index = colConfig.Index;
-
-                    //    //TODO check this
-                    //    //if (index < 0 && !colConfig.AutoIndex)
-                    //    //    throw new Exception($"The excel cell index value hasn't been configured for the property: {property.Name}, see HasExcelIndex(int index) or AdjustAutoIndex() methods for more informations.");
-                    //}
-
                     var unwrapType = valueProvider.Method.ReturnType.UnwrapNullableType();
                     object value = null;
                     try
@@ -138,7 +126,7 @@ namespace FluentExcel
                     }
 
                     // give a chance to the value converter even though value is null.
-                    if (colConfig?.ValueConverter != null)
+                    if (colConfig.ValueConverter != null)
                     {
                         value = colConfig.ValueConverter(value);
                         if (value == null) continue;
@@ -151,7 +139,7 @@ namespace FluentExcel
                     {
                         cell.CellStyle = cellStyle;
                     }
-                    else if (!string.IsNullOrEmpty(colConfig?.Formatter) && value is IFormattable fv)
+                    else if (!string.IsNullOrEmpty(colConfig.Formatter) && value is IFormattable fv)
                     {
                         // the formatter isn't excel supported formatter, but it's a C# formatter.
                         // The result is the Excel cell data type become String.
@@ -284,11 +272,11 @@ namespace FluentExcel
             var setting = Excel.Setting;
             if (!string.IsNullOrWhiteSpace(excelFile))
             {
-                if (Path.GetExtension(excelFile) == "xlsx")
+                if (Path.GetExtension(excelFile).ToLower() == ".xlsx")
                 {
                     setting.UserXlsx = true;
                 }
-                else if (Path.GetExtension(excelFile) == "xlsx")
+                else if (Path.GetExtension(excelFile).ToLower() == ".xls")
                 {
                     setting.UserXlsx = false;
                 }
@@ -374,6 +362,12 @@ namespace FluentExcel
             }
         }
 
+        /// <summary>
+        /// Builds the column title as a property name path from the expression
+        /// </summary>
+        /// <param name="expr">The expr.</param>
+        /// <param name="separator">The separator.</param>
+        /// <returns></returns>
         internal static string GetColumnTitle(LambdaExpression expr, string separator = " ")
         {
             var stack = new Stack<string>();
