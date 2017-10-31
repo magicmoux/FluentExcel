@@ -2,6 +2,7 @@
 
 namespace FluentExcel
 {
+    using System;
     using System.Collections.Generic;
 
     /// <summary>
@@ -56,5 +57,11 @@ namespace FluentExcel
         internal IDictionary<string, IFluentConfiguration> FluentConfigs { get; } = new Dictionary<string, IFluentConfiguration>();
 
         internal HashSet<IFluentConfiguration> CurrentSheetsSettings { get; set; }
+    }
+
+    [Obsolete("Use class WorkbookSettings insetad")]
+    public class ExcelSetting
+        : WorkbookSettings
+    {
     }
 }

@@ -83,7 +83,7 @@ namespace samples
             ;
 
             // load from excel
-            var loadFromExcel = Excel.Load<Report>(excelFile);
+            var loadFromExcel = OpenXML.Load<Report>(excelFile);
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace samples
         /// </summary>
         private static void FluentConfiguration()
         {
-            var fc = Excel.Setting.For<Report>();
+            var fc = OpenXML.Settings.For<Report>();
 
             fc.HasStatistics("合计", "SUM", 6, 7)
               .HasFilter(firstColumn: 0, lastColumn: 2, firstRow: 0)

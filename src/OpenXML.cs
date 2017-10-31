@@ -13,13 +13,28 @@ namespace FluentExcel
     /// <summary>
     /// Provides some methods for loading <see cref="IEnumerable{T}"/> from excel.
     /// </summary>
+    [Obsolete("Use class OpenXML instead")]
     public static class Excel
+    {
+        public static WorkbookSettings Setting { get { return OpenXML.Settings; } }
+
+        public static IEnumerable<T> Load<T>(string excelFile, int startRow = 1, int sheetIndex = 0)
+            where T : class, new()
+        {
+            return OpenXML.Load<T>(excelFile, startRow = 1, sheetIndex = 0);
+        }
+    }
+
+    /// <summary>
+    /// Provides some methods for loading <see cref="IEnumerable{T}"/> from workbooks.
+    /// </summary>
+    public static class OpenXML
     {
         /// <summary>
         /// Gets or sets the setting.
         /// </summary>
         /// <value>The setting.</value>
-        public static WorkbookSettings Setting { get; set; } = new WorkbookSettings();
+        public static WorkbookSettings Settings { get; internal set; } = new WorkbookSettings();
 
         /// <summary>
         /// Loading <see cref="IEnumerable{T}"/> from specified excel file. ///
@@ -46,7 +61,7 @@ namespace FluentExcel
 
             bool fluentConfigEnabled = false;
             // get the fluent config
-            if (Setting.FluentConfigs.TryGetValue(typeof(T).FullName, out var fluentConfig))
+            if (Settings.FluentConfigs.TryGetValue(typeof(T).FullName, out var fluentConfig))
             {
                 fluentConfigEnabled = true;
             }

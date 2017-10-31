@@ -56,7 +56,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Excel.cs" />
+    <Compile Include="OpenXML.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="WorkbookSettings.cs" />
     <Compile Include="Extensions\WorkbookExtensions.cs" />

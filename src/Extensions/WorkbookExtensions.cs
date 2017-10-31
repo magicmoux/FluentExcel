@@ -62,7 +62,7 @@ namespace FluentExcel.Extensions
             }
             else
             {
-                worksheet = Excel.Setting.For<T>();
+                worksheet = OpenXML.Settings.For<T>();
                 settings.FluentConfigs[sheetName] = worksheet;
             }
             // Sets the current configuration active sheet

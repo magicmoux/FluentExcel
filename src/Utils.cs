@@ -36,7 +36,7 @@ namespace FluentExcel
             bool isConfigured = configuration != null;
             if (!isConfigured)
             {
-                configuration = Excel.Setting.For<T>(false);
+                configuration = OpenXML.Settings.For<T>(false);
                 // Get the fluent config for the type if it exists
                 if (configuration != null)
                 {
@@ -270,7 +270,7 @@ namespace FluentExcel
                 var workbook = WorkbookFactory.Create(new FileStream(excelFile, FileMode.Open, FileAccess.Read));
                 return workbook;
             }
-            var setting = Excel.Setting;
+            var setting = OpenXML.Settings;
             if (!string.IsNullOrWhiteSpace(excelFile))
             {
                 if (Path.GetExtension(excelFile).ToLower() == ".xlsx")
